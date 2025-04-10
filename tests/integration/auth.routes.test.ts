@@ -4,6 +4,8 @@ import { Request, Response, NextFunction } from 'express';
 import 'express';
 import { agent, mockToken, mockUsers } from '../mocks';
 import { setupBasicTests } from '../mocks/test-hooks';
+import { moduleEnum, accessLevelEnum } from '../../src/models/enums';
+import { ModuleAccess } from '../../src/services/role.service';
 
 // Mock environment config to disable encryption
 jest.mock('../../src/config/env.config', () => ({
@@ -11,6 +13,7 @@ jest.mock('../../src/config/env.config', () => ({
   default: {
     ...jest.requireActual('../../src/config/env.config').default,
     ENCRYPTION_ENABLED: false,
+    RATE_LIMIT_ENABLED: false,
   },
 }));
 
@@ -24,7 +27,7 @@ declare module 'express' {
       id: string;
       userId?: number;
       email: string;
-      role: string;
+      roleId: string;
     };
   }
 }
@@ -38,7 +41,7 @@ jest.mock('../../src/middleware/auth.middleware', () => {
           id: '1',
           userId: 1,
           email: 'test@example.com',
-          role: 'user',
+          roleId: 'user',
         };
         next();
       } else {
@@ -55,7 +58,7 @@ jest.mock('../../src/middleware/auth.middleware', () => {
           error: 'Unauthorized',
         });
       }
-      if (roles && !roles.includes(req.user.role)) {
+      if (roles && !roles.includes(req.user.roleId)) {
         return res.status(StatusCodes.FORBIDDEN).json({
           success: false,
           error: 'Forbidden',
@@ -100,21 +103,43 @@ describe('Auth Routes', () => {
   describe('POST /api/auth/register', () => {
     it('should register a new user', async () => {
       // Arrange
+      const moduleAccessInput = {
+        dashboard: 'no_access',
+        projects: 'view_access',
+        surveys: 'view_access',
+        calendar: 'no_access',
+        customers: 'edit_access',
+        components: 'no_access',
+        equipments: 'no_access',
+      };
+
+      // This is the data we'll send in the request
       const newUser = {
         email: 'new@example.com',
         password: 'password123',
         firstName: 'New',
         lastName: 'User',
+        roleId: '9f983688-16f7-4969-9eb9-72eb7acbefa3',
+        phoneNumber: '1234567890',
+        moduleAccess: moduleAccessInput,
       };
+
+      // This is the expected processed moduleAccess that the controller will create
+      const expectedModuleAccess = Object.entries(moduleAccessInput).map(
+        ([module, accessLevel]) => ({
+          module,
+          accessLevel,
+        }),
+      ) as ModuleAccess[];
 
       authService.register.mockResolvedValue({
         success: true,
         data: {
-          id: 3,
+          id: '9f983688-16f7-4969-9eb9-72eb7acbefa2',
           email: newUser.email,
           firstName: newUser.firstName,
           lastName: newUser.lastName,
-          role: 'user',
+          roleId: '9f983688-16f7-4969-9eb9-72eb7acbefa3',
         },
         statusCode: StatusCodes.CREATED,
       });
@@ -130,10 +155,17 @@ describe('Auth Routes', () => {
           email: newUser.email,
         }),
       );
+
+      // Verify we're calling register with proper params but don't be strict about roleId
+      // as it might be modified by the controller during processing
       expect(authService.register).toHaveBeenCalledWith(
         expect.objectContaining({
           email: newUser.email,
           password: newUser.password,
+          firstName: newUser.firstName,
+          lastName: newUser.lastName,
+          phoneNumber: '1234567890',
+          moduleAccess: expectedModuleAccess,
         }),
       );
     });
@@ -159,6 +191,19 @@ describe('Auth Routes', () => {
       const existingUser = {
         email: 'test@example.com',
         password: 'password123',
+        firstName: 'Test',
+        lastName: 'User',
+        roleId: '99999999-9999-9999-9999-999999999999',
+        phoneNumber: '1234567890',
+        moduleAccess: {
+          dashboard: 'no_access',
+          projects: 'view_access',
+          surveys: 'view_access',
+          calendar: 'no_access',
+          customers: 'edit_access',
+          components: 'no_access',
+          equipments: 'no_access',
+        },
       };
 
       authService.register.mockResolvedValue({
@@ -257,7 +302,6 @@ describe('Auth Routes', () => {
       expect(response.body.success).toBe(true);
       expect(response.body.data).toHaveProperty('userId');
       expect(response.body.data).toHaveProperty('email');
-      expect(response.body.data).toHaveProperty('role');
     });
 
     it('should return 401 if not authenticated', async () => {

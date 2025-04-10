@@ -1,4 +1,5 @@
-import { User, NewUser, ServiceResponse, JwtPayload } from '../index';
+import { User, ServiceResponse } from '../index';
+import { RegisterUserData } from '../../services/auth.service';
 
 /**
  * Auth service interface
@@ -7,9 +8,7 @@ export interface IAuthService {
   /**
    * Register a new user
    */
-  register(
-    userData: Omit<NewUser, 'id' | 'createdAt' | 'updatedAt'>,
-  ): Promise<ServiceResponse<Omit<User, 'password'>>>;
+  register(userData: RegisterUserData): Promise<ServiceResponse<Omit<User, 'password'>>>;
 
   /**
    * Login user
@@ -20,24 +19,4 @@ export interface IAuthService {
    * Refresh token
    */
   refreshToken(userId: string): Promise<ServiceResponse<{ token: string }>>;
-}
-
-/**
- * JWT utility interface
- */
-export interface IJwtUtil {
-  /**
-   * Generate a JWT token
-   */
-  generateToken(payload: JwtPayload): string;
-
-  /**
-   * Verify a JWT token
-   */
-  verifyToken(token: string): ServiceResponse<JwtPayload>;
-
-  /**
-   * Decode a JWT token without verification
-   */
-  decodeToken(token: string): JwtPayload | null;
 }

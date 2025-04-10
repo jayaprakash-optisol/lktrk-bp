@@ -1,8 +1,10 @@
-import { AuthService } from '../../../src/services/auth.service';
-import { UserService } from '../../../src/services/user.service';
+import { AuthService } from '../../../src/services';
+import { UserService } from '../../../src/services';
+import { RoleService } from '../../../src/services';
 import { mockUsers } from '../../mocks/mocks';
 import { jwtUtil } from '../../../src/utils/jwt.util';
 import { StatusCodes } from 'http-status-codes';
+import { ModuleAccess } from '../../../src/services/role.service';
 
 // Fix the UserService mock implementation
 jest.mock('../../../src/services/user.service', () => {
@@ -24,6 +26,21 @@ jest.mock('../../../src/services/user.service', () => {
   };
 });
 
+// Mock the RoleService
+jest.mock('../../../src/services/role.service', () => {
+  const getRoleById = jest.fn();
+  const createRole = jest.fn();
+
+  return {
+    RoleService: {
+      getInstance: jest.fn(() => ({
+        getRoleById,
+        createRole,
+      })),
+    },
+  };
+});
+
 // Fix the JWT mock implementation
 jest.mock('../../../src/utils/jwt.util', () => {
   const generateToken = jest.fn(() => 'mock-token');
@@ -38,6 +55,7 @@ jest.mock('../../../src/utils/jwt.util', () => {
 describe('AuthService', () => {
   let authService: AuthService;
   let mockUserService: any;
+  let mockRoleService: any;
 
   beforeEach(() => {
     // Clear mocks
@@ -46,8 +64,9 @@ describe('AuthService', () => {
     // Get instance of service
     authService = AuthService.getInstance();
 
-    // Get mocked user service
+    // Get mocked services
     mockUserService = UserService.getInstance();
+    mockRoleService = RoleService.getInstance();
   });
 
   describe('getInstance', () => {
@@ -65,17 +84,44 @@ describe('AuthService', () => {
     it('should register a new user successfully', async () => {
       // Arrange
       const userData = {
-        email: 'new@example.com',
-        password: 'password123',
-        firstName: 'New',
-        lastName: 'User',
-        role: 'user' as const,
+        email: 'useds1ddr@example.com',
+        password: 'Password123!',
+        firstName: 'John',
+        lastName: 'Doe',
+        phoneNumber: '555-123-4567',
+        roleId: 'a301bc88-331a-411c-84ce-2c311e628942',
+        moduleAccess: [
+          { module: 'dashboard', accessLevel: 'no_access' },
+          { module: 'projects', accessLevel: 'view_access' },
+          { module: 'surveys', accessLevel: 'view_access' },
+          { module: 'calendar', accessLevel: 'no_access' },
+          { module: 'customers', accessLevel: 'edit_access' },
+          { module: 'components', accessLevel: 'no_access' },
+          { module: 'equipments', accessLevel: 'no_access' },
+        ] as unknown as ModuleAccess[],
       };
 
       mockUserService.getUserByEmail.mockResolvedValue({
         success: false,
         error: 'User not found',
         statusCode: 404,
+      });
+
+      // Mock role validation
+      mockRoleService.getRoleById.mockResolvedValue({
+        success: true,
+        data: { id: 'a301bc88-331a-411c-84ce-2c311e628942', name: 'User' },
+      });
+
+      // Mock create role for moduleAccess
+      mockRoleService.createRole.mockResolvedValue({
+        success: true,
+        data: {
+          id: 'new-custom-role-id',
+          name: 'John Doe Role',
+          description: 'Custom role for useds1ddr@example.com',
+          moduleAccess: userData.moduleAccess,
+        },
       });
 
       mockUserService.createUser.mockResolvedValue({
@@ -86,7 +132,8 @@ describe('AuthService', () => {
           password: 'hashed_password',
           firstName: userData.firstName,
           lastName: userData.lastName,
-          role: userData.role,
+          phoneNumber: userData.phoneNumber,
+          roleId: 'new-custom-role-id', // Custom role created with moduleAccess
           isActive: true,
           createdAt: new Date(),
           updatedAt: new Date(),
@@ -99,7 +146,21 @@ describe('AuthService', () => {
 
       // Assert
       expect(mockUserService.getUserByEmail).toHaveBeenCalledWith(userData.email);
-      expect(mockUserService.createUser).toHaveBeenCalledWith(userData);
+      expect(mockRoleService.createRole).toHaveBeenCalledWith({
+        name: 'John Doe Role',
+        description: 'Custom role for useds1ddr@example.com',
+        moduleAccess: userData.moduleAccess,
+      });
+      expect(mockUserService.createUser).toHaveBeenCalledWith(
+        expect.objectContaining({
+          email: userData.email,
+          password: userData.password,
+          firstName: userData.firstName,
+          lastName: userData.lastName,
+          phoneNumber: userData.phoneNumber,
+          roleId: 'new-custom-role-id',
+        }),
+      );
       expect(result.success).toBe(true);
       expect(result.data).toEqual(
         expect.objectContaining({
@@ -107,7 +168,69 @@ describe('AuthService', () => {
           email: userData.email,
           firstName: userData.firstName,
           lastName: userData.lastName,
-          role: userData.role,
+          phoneNumber: userData.phoneNumber,
+        }),
+      );
+      expect(result.data).not.toHaveProperty('password');
+    });
+
+    it('should register a user with existing role when no moduleAccess provided', async () => {
+      // Arrange
+      const userData = {
+        email: 'nomodule@example.com',
+        password: 'Password123!',
+        firstName: 'Regular',
+        lastName: 'User',
+        phoneNumber: '555-987-6543',
+        roleId: 'a301bc88-331a-411c-84ce-2c311e628942',
+      };
+
+      mockUserService.getUserByEmail.mockResolvedValue({
+        success: false,
+        error: 'User not found',
+        statusCode: 404,
+      });
+
+      // Mock role validation
+      mockRoleService.getRoleById.mockResolvedValue({
+        success: true,
+        data: { id: 'a301bc88-331a-411c-84ce-2c311e628942', name: 'User' },
+      });
+
+      mockUserService.createUser.mockResolvedValue({
+        success: true,
+        data: {
+          id: 4,
+          email: userData.email,
+          password: 'hashed_password',
+          firstName: userData.firstName,
+          lastName: userData.lastName,
+          phoneNumber: userData.phoneNumber,
+          roleId: userData.roleId, // Uses existing role
+          isActive: true,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+        statusCode: 201,
+      });
+
+      // Act
+      const result = await authService.register(userData);
+
+      // Assert
+      expect(mockUserService.getUserByEmail).toHaveBeenCalledWith(userData.email);
+      expect(mockRoleService.getRoleById).toHaveBeenCalledWith(userData.roleId);
+      expect(mockRoleService.createRole).not.toHaveBeenCalled();
+      expect(mockUserService.createUser).toHaveBeenCalledWith(userData);
+      expect(result.success).toBe(true);
+      expect(result.data).toEqual(
+        expect.objectContaining({
+          id: 4,
+          email: userData.email,
+          firstName: userData.firstName,
+          lastName: userData.lastName,
+          phoneNumber: userData.phoneNumber,
+          roleId: userData.roleId,
         }),
       );
       expect(result.data).not.toHaveProperty('password');
@@ -120,7 +243,8 @@ describe('AuthService', () => {
         password: 'password123',
         firstName: 'Test',
         lastName: 'User',
-        role: 'user' as const,
+        phoneNumber: '1234567890',
+        roleId: 'Admin',
       };
 
       mockUserService.getUserByEmail.mockResolvedValue({
@@ -146,7 +270,8 @@ describe('AuthService', () => {
         password: 'password123',
         firstName: 'New',
         lastName: 'User',
-        role: 'user' as const,
+        phoneNumber: '1234567890',
+        roleId: 'Admin',
       };
 
       mockUserService.getUserByEmail.mockRejectedValue(new Error('Database error'));
@@ -181,7 +306,7 @@ describe('AuthService', () => {
       expect(jwtUtil.generateToken).toHaveBeenCalledWith({
         userId: mockUsers[0].id,
         email: mockUsers[0].email,
-        role: mockUsers[0].role,
+        roleId: mockUsers[0].roleId,
       });
       expect(result.success).toBe(true);
       expect(result.data).toEqual({
@@ -233,7 +358,7 @@ describe('AuthService', () => {
   describe('refreshToken', () => {
     it('should refresh token successfully', async () => {
       // Arrange
-      const userId = 1;
+      const userId = '9f983688-16f7-4969-9eb9-72eb7acbefa2';
 
       mockUserService.getUserById.mockResolvedValue({
         success: true,
@@ -248,7 +373,7 @@ describe('AuthService', () => {
       expect(jwtUtil.generateToken).toHaveBeenCalledWith({
         userId: mockUsers[0].id,
         email: mockUsers[0].email,
-        role: mockUsers[0].role,
+        roleId: mockUsers[0].roleId,
       });
       expect(result.success).toBe(true);
       expect(result.data).toEqual({
@@ -258,7 +383,7 @@ describe('AuthService', () => {
 
     it('should return error if user not found', async () => {
       // Arrange
-      const userId = 999;
+      const userId = '9f983688-16f7-4969-9eb9-72eb7acbefa3';
 
       mockUserService.getUserById.mockResolvedValue({
         success: false,
@@ -279,7 +404,7 @@ describe('AuthService', () => {
 
     it('should handle service errors', async () => {
       // Arrange
-      const userId = 1;
+      const userId = '9f983688-16f7-4969-9eb9-72eb7acbefa2';
 
       mockUserService.getUserById.mockRejectedValue(new Error('Database error'));
 

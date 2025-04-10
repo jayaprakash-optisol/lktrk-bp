@@ -11,26 +11,30 @@ import app from '../../src/app';
 // Mock user data
 export const mockUsers: User[] = [
   {
-    id: 1,
+    id: '9f983688-16f7-4969-9eb9-72eb7acbefa2',
     email: 'test@example.com',
     password: '$2b$10$rGVKYWheQRbeWSgDS3S1OeKnpBF3T8MgWKIUVCXbDCl2t9MTrxKOa',
     firstName: 'Test',
     lastName: 'User',
-    role: 'user',
-    isActive: true,
+    roleId: '9f983688-16f7-4969-9eb9-72eb7acbefa2',
     createdAt: new Date('2023-01-01'),
     updatedAt: new Date('2023-01-01'),
+    phoneNumber: '1234567890',
+    isDeleted: false,
+    deletedAt: null,
   },
   {
-    id: 2,
+    id: '9f983688-16f7-4969-9eb9-72eb7acbefa3',
     email: 'admin@example.com',
     password: '$2b$10$rGVKYWheQRbeWSgDS3S1OeKnpBF3T8MgWKIUVCXbDCl2t9MTrxKOa',
     firstName: 'Admin',
     lastName: 'User',
-    role: 'admin',
-    isActive: true,
+    roleId: '9f983688-16f7-4969-9eb9-72eb7acbefa3',
     createdAt: new Date('2023-01-01'),
     updatedAt: new Date('2023-01-01'),
+    phoneNumber: '1234567890',
+    isDeleted: false,
+    deletedAt: null,
   },
 ];
 
@@ -98,9 +102,10 @@ export const mockAuthRequest = (user?: Partial<User>) => {
     user: user
       ? {
           id: String(user.id || 1),
-          userId: user.id || 1,
+          userId: String(user.id || 1),
           email: user.email || 'test@example.com',
-          role: user.role || 'user',
+          roleId: user.roleId || 'user-role-id',
+          role: 'user',
         }
       : undefined,
   };

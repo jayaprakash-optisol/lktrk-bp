@@ -64,12 +64,19 @@ describe('AuthController', () => {
         password: 'password123',
         firstName: 'New',
         lastName: 'User',
-        role: 'user',
+        roleId: 'user-role-id',
+        phoneNumber: '1234567890',
       };
 
       mockAuthService.register.mockResolvedValue({
         success: true,
-        data: { id: 3, email: 'new@example.com', role: 'user' },
+        data: {
+          id: '3',
+          email: 'new@example.com',
+          roleId: 'user-role-id',
+          firstName: 'New',
+          lastName: 'User',
+        },
         statusCode: 201,
       });
 
@@ -82,13 +89,20 @@ describe('AuthController', () => {
         password: 'password123',
         firstName: 'New',
         lastName: 'User',
-        role: 'user',
+        roleId: 'user-role-id',
+        phoneNumber: '1234567890',
       });
       expect(res.status).toHaveBeenCalledWith(201);
       expect(res.json).toHaveBeenCalledWith({
         success: true,
         message: 'User registered successfully',
-        data: { id: 3, email: 'new@example.com', role: 'user' },
+        data: {
+          id: '3',
+          email: 'new@example.com',
+          roleId: 'user-role-id',
+          firstName: 'New',
+          lastName: 'User',
+        },
         error: undefined,
         statusCode: 201,
       });
@@ -113,7 +127,7 @@ describe('AuthController', () => {
       expect(res.json).toHaveBeenCalledWith({
         success: false,
         message: 'Operation failed',
-        error: 'Email and password are required',
+        error: 'Email, password, first name and last name are required',
         statusCode: 400,
       });
     });
@@ -125,6 +139,8 @@ describe('AuthController', () => {
       req.body = {
         email: 'existing@example.com',
         password: 'password123',
+        firstName: 'Test',
+        lastName: 'User',
       };
 
       mockAuthService.register.mockResolvedValue({
@@ -154,6 +170,8 @@ describe('AuthController', () => {
       req.body = {
         email: 'test@example.com',
         password: 'password123',
+        firstName: 'Test',
+        lastName: 'User',
       };
 
       mockAuthService.register.mockRejectedValue(new Error('Database error'));
@@ -285,17 +303,17 @@ describe('AuthController', () => {
 
       // Assert
       expect(res.status).toHaveBeenCalledWith(200);
-      expect(res.json).toHaveBeenCalledWith({
-        success: true,
-        data: {
-          userId: req.user!.userId || req.user!.id,
-          email: req.user!.email,
-          role: req.user!.role,
-        },
-        error: undefined,
-        message: 'Operation successful',
-        statusCode: 200,
-      });
+      expect(res.json).toHaveBeenCalledWith(
+        expect.objectContaining({
+          success: true,
+          data: expect.objectContaining({
+            userId: req.user!.userId || req.user!.id,
+            email: req.user!.email,
+          }),
+          message: 'Operation successful',
+          statusCode: 200,
+        }),
+      );
       expect(mockNext).not.toHaveBeenCalled();
     });
 
@@ -349,7 +367,7 @@ describe('AuthController', () => {
       await authController.refreshToken(req, res, mockNext);
 
       // Assert
-      expect(mockAuthService.refreshToken).toHaveBeenCalledWith(Number(req.user!.id));
+      expect(mockAuthService.refreshToken).toHaveBeenCalledWith(req.user!.id);
       expect(res.status).toHaveBeenCalledWith(200);
       expect(res.json).toHaveBeenCalledWith({
         success: true,

@@ -4,7 +4,7 @@ paths:
       tags:
         - Users
       summary: Get all users
-      description: Returns a paginated list of all users (admin only)
+      description: Returns a list of users with pagination (admin only)
       security:
         - bearerAuth: []
       parameters:
@@ -12,17 +12,14 @@ paths:
           name: page
           schema:
             type: integer
-            minimum: 1
             default: 1
           description: Page number
         - in: query
           name: limit
           schema:
             type: integer
-            minimum: 1
-            maximum: 100
             default: 10
-          description: Number of users per page
+          description: Number of items per page
       responses:
         '200':
           description: List of users
@@ -34,25 +31,25 @@ paths:
                   success:
                     type: boolean
                     example: true
-                  users:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/User'
-                  pagination:
+                  data:
                     type: object
                     properties:
+                      items:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/User'
                       total:
                         type: integer
-                        example: 100
+                        example: 42
                       page:
                         type: integer
                         example: 1
                       limit:
                         type: integer
                         example: 10
-                      pages:
+                      totalPages:
                         type: integer
-                        example: 10
+                        example: 5
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '403':
@@ -63,7 +60,7 @@ paths:
       tags:
         - Users
       summary: Create a new user
-      description: Creates a new user account (admin only)
+      description: Creates a new user (admin only)
       security:
         - bearerAuth: []
       requestBody:
@@ -75,6 +72,8 @@ paths:
               required:
                 - email
                 - password
+                - firstName
+                - lastName
               properties:
                 email:
                   type: string
@@ -91,11 +90,49 @@ paths:
                 lastName:
                   type: string
                   example: Doe
-                role:
+                phoneNumber:
                   type: string
-                  enum: [admin, user]
-                  default: user
-                  example: user
+                  example: '555-123-4567'
+                  description: User's phone number
+                roleId:
+                  type: string
+                  format: uuid
+                  example: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+                  description: Role ID to assign to the user. Either roleId or moduleAccess is required.
+                moduleAccess:
+                  type: object
+                  description: Module access permissions for custom role creation. Either roleId or moduleAccess is required.
+                  example:
+                    {
+                      'dashboard': 'no_access',
+                      'projects': 'view_access',
+                      'surveys': 'view_access',
+                      'calendar': 'no_access',
+                      'customers': 'edit_access',
+                      'components': 'no_access',
+                      'equipments': 'no_access',
+                    }
+                  properties:
+                    dashboard:
+                      $ref: '#/components/schemas/AccessLevel'
+                    projects:
+                      $ref: '#/components/schemas/AccessLevel'
+                    surveys:
+                      $ref: '#/components/schemas/AccessLevel'
+                    calendar:
+                      $ref: '#/components/schemas/AccessLevel'
+                    customers:
+                      $ref: '#/components/schemas/AccessLevel'
+                    components:
+                      $ref: '#/components/schemas/AccessLevel'
+                    equipments:
+                      $ref: '#/components/schemas/AccessLevel'
+                    facility:
+                      $ref: '#/components/schemas/AccessLevel'
+                    roles:
+                      $ref: '#/components/schemas/AccessLevel'
+                    reports:
+                      $ref: '#/components/schemas/AccessLevel'
       responses:
         '201':
           description: User created successfully
@@ -134,7 +171,8 @@ paths:
           name: id
           required: true
           schema:
-            type: integer
+            type: string
+            format: uuid
           description: User ID
       responses:
         '200':
@@ -161,7 +199,7 @@ paths:
       tags:
         - Users
       summary: Update user
-      description: Updates an existing user (admin only)
+      description: Updates a user (admin only)
       security:
         - bearerAuth: []
       parameters:
@@ -169,7 +207,8 @@ paths:
           name: id
           required: true
           schema:
-            type: integer
+            type: string
+            format: uuid
           description: User ID
       requestBody:
         required: true
@@ -189,13 +228,17 @@ paths:
                   format: password
                   example: Password123!
                   minLength: 6
-                role:
+                roleId:
                   type: string
-                  enum: [admin, user]
-                  example: user
-                isActive:
+                  format: uuid
+                  example: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+                  description: Role ID to assign to the user
+                phoneNumber:
+                  type: string
+                  example: '555-123-4567'
+                isDeleted:
                   type: boolean
-                  example: true
+                  example: false
       responses:
         '200':
           description: User updated successfully
@@ -234,22 +277,12 @@ paths:
           name: id
           required: true
           schema:
-            type: integer
+            type: string
+            format: uuid
           description: User ID
       responses:
-        '200':
+        '204':
           description: User deleted successfully
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  success:
-                    type: boolean
-                    example: true
-                  message:
-                    type: string
-                    example: User deleted successfully
         '401':
           $ref: '#/components/responses/UnauthorizedError'
         '403':

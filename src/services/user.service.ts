@@ -7,15 +7,27 @@ import { IUserService } from '../types/interfaces/user.interface';
 import env from '../config/env.config';
 import { StatusCodes } from 'http-status-codes';
 import { createServiceResponse, createNotFoundError } from '../utils/response.util';
-import crypto from 'crypto';
-import { Singleton } from '../utils/service.util';
+import { v4 as uuidv4 } from 'uuid';
 
 interface ErrorWithStatusCode extends Error {
   statusCode: number;
 }
 
-@Singleton
 export class UserService implements IUserService {
+  private static instance: UserService;
+
+  private constructor() {}
+
+  /**
+   * Get singleton instance
+   */
+  public static getInstance(): UserService {
+    if (!UserService.instance) {
+      UserService.instance = new UserService();
+    }
+    return UserService.instance;
+  }
+
   /**
    * Create a new user
    */
@@ -29,15 +41,21 @@ export class UserService implements IUserService {
         parseInt(env.BCRYPT_SALT_ROUNDS.toString(), 10),
       );
 
+      const now = new Date();
+
       // Insert user into database with hashed password
       const result = await db
         .insert(user)
         .values({
-          ...userData,
+          id: uuidv4(),
+          firstName: userData.firstName,
+          lastName: userData.lastName,
+          email: userData.email,
           password: hashedPassword,
-          id: crypto.randomUUID(),
-          createdAt: new Date(),
-          updatedAt: new Date(),
+          phoneNumber: userData.phoneNumber,
+          roleId: userData.roleId,
+          createdAt: now,
+          updatedAt: now,
           isDeleted: false,
         })
         .returning();

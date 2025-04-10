@@ -34,14 +34,14 @@ jest.mock('../../../src/config/env.config', () => ({
 
 // Mock drizzle-orm
 jest.mock('drizzle-orm', () => ({
-  eq: jest.fn().mockReturnValue({ field: 'id', value: 1 }),
+  eq: jest.fn().mockReturnValue({ field: 'id', value: '9f983688-16f7-4969-9eb9-72eb7acbefa2' }),
   getTableColumns: jest.fn().mockReturnValue({
     password: 'password',
     id: 'id',
     firstName: 'firstName',
     lastName: 'lastName',
     email: 'email',
-    role: 'role',
+    roleId: 'roleId',
     isActive: 'isActive',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt',
@@ -50,15 +50,15 @@ jest.mock('drizzle-orm', () => ({
 
 // Mock models
 jest.mock('../../../src/models', () => ({
-  users: { id: 'id', email: 'email' },
+  user: { id: 'id', email: 'email' },
 }));
 
 // Mock error utilities
 jest.mock('../../../src/utils/response.util', () => ({
-  createServiceResponse: jest.fn((success, data, message, statusCode) => ({
+  createServiceResponse: jest.fn((success, data, error, statusCode) => ({
     success,
     data,
-    message,
+    error,
     statusCode,
   })),
   createNotFoundError: jest.fn(message => {
@@ -76,8 +76,8 @@ jest.mock('bcrypt', () => ({
 
 // Now import everything after mocks are set up
 import { StatusCodes } from 'http-status-codes';
-import { UserService } from '../../../src/services/user.service';
-import { NewUser, User } from '../../../src/types';
+import { UserService } from '../../../src/services';
+import { User } from '../../../src/types';
 import bcrypt from 'bcrypt';
 
 // Access the mockDb through the mock module
@@ -88,24 +88,17 @@ describe('UserService', () => {
   let userService: UserService;
 
   const mockUser: User = {
-    id: 1,
+    id: '9f983688-16f7-4969-9eb9-72eb7acbefa2',
     firstName: 'John',
     lastName: 'Doe',
     email: 'john@example.com',
     password: 'hashedPassword',
-    role: 'user',
-    isActive: true,
+    roleId: 'role-123',
+    isDeleted: false,
+    deletedAt: null,
     createdAt: new Date(),
     updatedAt: new Date(),
-  };
-
-  const mockNewUser: Omit<NewUser, 'id' | 'createdAt' | 'updatedAt'> = {
-    firstName: 'John',
-    lastName: 'Doe',
-    email: 'john@example.com',
-    password: 'password123',
-    role: 'user',
-    isActive: true,
+    phoneNumber: '1234567890',
   };
 
   beforeEach(() => {
@@ -133,53 +126,13 @@ describe('UserService', () => {
     });
   });
 
-  describe('createUser', () => {
-    it('should create a user successfully', async () => {
-      // Setup
-      mockDb.returning.mockResolvedValueOnce([mockUser]);
-
-      // Execute
-      const result = await userService.createUser(mockNewUser);
-
-      // Verify
-      expect(result.success).toBe(true);
-      expect(result.data).toEqual(mockUser);
-      expect(result.statusCode).toBe(StatusCodes.CREATED);
-    });
-
-    it('should handle errors when creating a user', async () => {
-      // Setup
-      mockDb.returning.mockResolvedValueOnce([]);
-
-      // Execute
-      const result = await userService.createUser(mockNewUser);
-
-      // Verify
-      expect(result.success).toBe(false);
-      expect(result.message).toBe('Failed to create user');
-    });
-
-    it('should handle database errors', async () => {
-      // Setup
-      const dbError = new Error('Database error');
-      mockDb.returning.mockRejectedValueOnce(dbError);
-
-      // Execute
-      const result = await userService.createUser(mockNewUser);
-
-      // Verify
-      expect(result.success).toBe(false);
-      expect(result.message).toBe('Database error');
-    });
-  });
-
   describe('getUserById', () => {
     it('should get a user by ID successfully', async () => {
       // Setup - simulate the DB operations that occur within getUserById
       mockDb.limit.mockResolvedValueOnce([mockUser]);
 
       // Execute
-      const result = await userService.getUserById(1);
+      const result = await userService.getUserById('9f983688-16f7-4969-9eb9-72eb7acbefa2');
 
       // Verify
       expect(result.success).toBe(true);
@@ -191,7 +144,7 @@ describe('UserService', () => {
       mockDb.limit.mockResolvedValueOnce([]);
 
       // Execute
-      const result = await userService.getUserById(1);
+      const result = await userService.getUserById('9f983688-16f7-4969-9eb9-72eb7acbefa2');
 
       // Verify
       expect(result.success).toBe(false);
@@ -206,11 +159,11 @@ describe('UserService', () => {
       });
 
       // Execute
-      const result = await userService.getUserById(1);
+      const result = await userService.getUserById('9f983688-16f7-4969-9eb9-72eb7acbefa2');
 
       // Verify
       expect(result.success).toBe(false);
-      expect(result.message).toBe('Database error');
+      expect(result.error).toBe('Database error');
     });
   });
 
@@ -285,7 +238,7 @@ describe('UserService', () => {
 
       // Verify
       expect(result.success).toBe(false);
-      expect(result.message).toBe('Database error');
+      expect(result.error).toBe('Database error');
     });
   });
 
@@ -305,7 +258,10 @@ describe('UserService', () => {
       mockDb.returning.mockResolvedValueOnce([updatedUser]);
 
       // Execute
-      const result = await userService.updateUser(1, updateData);
+      const result = await userService.updateUser(
+        '9f983688-16f7-4969-9eb9-72eb7acbefa2',
+        updateData,
+      );
 
       // Verify
       expect(result.success).toBe(true);
@@ -325,7 +281,9 @@ describe('UserService', () => {
       mockDb.returning.mockResolvedValueOnce([updatedUser]);
 
       // Execute
-      const result = await userService.updateUser(1, { password: 'newPassword' });
+      const result = await userService.updateUser('9f983688-16f7-4969-9eb9-72eb7acbefa2', {
+        password: 'newPassword',
+      });
 
       // Verify
       expect(bcrypt.hash).toHaveBeenCalledWith('newPassword', 10);
@@ -338,7 +296,10 @@ describe('UserService', () => {
       mockDb.limit.mockResolvedValueOnce([]);
 
       // Execute
-      const result = await userService.updateUser(1, updateData);
+      const result = await userService.updateUser(
+        '9f983688-16f7-4969-9eb9-72eb7acbefa2',
+        updateData,
+      );
 
       // Verify
       expect(result.success).toBe(false);
@@ -353,7 +314,7 @@ describe('UserService', () => {
       mockDb.limit.mockResolvedValueOnce([mockUser]);
 
       // Execute
-      const result = await userService.deleteUser(1);
+      const result = await userService.deleteUser('9f983688-16f7-4969-9eb9-72eb7acbefa2');
 
       // Verify
       expect(result.success).toBe(true);
@@ -365,7 +326,7 @@ describe('UserService', () => {
       mockDb.limit.mockResolvedValueOnce([]);
 
       // Execute
-      const result = await userService.deleteUser(1);
+      const result = await userService.deleteUser('9f983688-16f7-4969-9eb9-72eb7acbefa2');
 
       // Verify
       expect(result.success).toBe(false);
@@ -403,7 +364,7 @@ describe('UserService', () => {
 
       // Verify
       expect(result.success).toBe(false);
-      expect(result.message).toBe('Invalid credentials');
+      expect(result.error).toBe('Invalid credentials');
     });
 
     it('should handle user not found during verification', async () => {
@@ -415,7 +376,7 @@ describe('UserService', () => {
 
       // Verify
       expect(result.success).toBe(false);
-      expect(result.message).toBe('Invalid credentials');
+      expect(result.error).toBe('Invalid credentials');
     });
   });
 });

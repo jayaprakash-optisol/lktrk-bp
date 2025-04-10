@@ -1,13 +1,13 @@
 import { Request, Response, NextFunction } from 'express';
-import { IUserService } from '../types';
+import { IUserService } from '../types/interfaces';
 import { sendSuccess, sendError } from '../utils/response.util';
-import { userService } from '../services';
+import { UserService } from '../services/user.service';
 
 export class UserController {
   private readonly userService: IUserService;
 
   constructor() {
-    this.userService = userService;
+    this.userService = UserService.getInstance();
   }
 
   /**
@@ -58,36 +58,6 @@ export class UserController {
   };
 
   /**
-   * Create a new user
-   */
-  createUser = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-    try {
-      const { email, password, firstName, lastName, roleId } = req.body;
-
-      // Validate required fields
-      if (!email || !password) {
-        return sendError(res, 'Email and password are required');
-      }
-
-      const result = await this.userService.createUser({
-        email,
-        password,
-        firstName,
-        lastName,
-        roleId,
-      });
-
-      if (!result.success) {
-        return sendError(res, result.error ?? 'Failed to create user');
-      }
-
-      sendSuccess(res, result.data, 'User created successfully');
-    } catch (error) {
-      next(error);
-    }
-  };
-
-  /**
    * Update user
    */
   updateUser = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
@@ -98,7 +68,7 @@ export class UserController {
         return sendError(res, 'Invalid user ID');
       }
 
-      const { firstName, lastName, password, roleId } = req.body;
+      const { firstName, lastName, password, roleId, isActive } = req.body;
 
       const result = await this.userService.updateUser(userId, {
         firstName,

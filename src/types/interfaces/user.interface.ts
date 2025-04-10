@@ -1,4 +1,4 @@
-import { User, NewUser, ServiceResponse, PaginationParams, PaginatedResult } from '../index';
+import { User, NewUser, PaginationParams, PaginatedResult, ServiceResponse } from '../index';
 
 /**
  * User service interface

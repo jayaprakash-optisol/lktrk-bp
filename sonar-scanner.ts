@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-var-requires */
 // This import method works with both ESM and CommonJS modules
 import * as fs from 'fs';
 import scanner from 'sonarqube-scanner';

@@ -27,9 +27,9 @@ describe('JWT Utility', () => {
     it('should generate a JWT token with payload', () => {
       // Arrange
       const payload = {
-        userId: 1,
+        userId: '1',
         email: 'test@example.com',
-        role: 'user',
+        roleId: 'user-role-id',
       };
 
       // Act
@@ -51,9 +51,9 @@ describe('JWT Utility', () => {
 
       // Arrange
       const payload = {
-        userId: 1,
+        userId: '1',
         email: 'test@example.com',
-        role: 'user',
+        roleId: 'user-role-id',
       };
 
       // Act & Assert
@@ -69,9 +69,9 @@ describe('JWT Utility', () => {
       // Arrange
       const token = 'valid-token';
       const payload = {
-        userId: 1,
+        userId: '1',
         email: 'test@example.com',
-        role: 'user',
+        roleId: 'user-role-id',
       };
       (jwt.verify as jest.Mock).mockReturnValue(payload);
 
@@ -106,9 +106,9 @@ describe('JWT Utility', () => {
           error: 'Invalid token',
           statusCode: 401,
           data: expect.objectContaining({
-            userId: 0,
+            userId: '',
             email: '',
-            role: '',
+            roleId: '',
           }),
         }),
       );
@@ -134,9 +134,9 @@ describe('JWT Utility', () => {
           error: 'Token expired',
           statusCode: 401,
           data: expect.objectContaining({
-            userId: 0,
+            userId: '',
             email: '',
-            role: '',
+            roleId: '',
           }),
         }),
       );
@@ -171,9 +171,9 @@ describe('JWT Utility', () => {
       // Arrange
       const token = 'valid-token';
       const payload = {
-        userId: 1,
+        userId: '1',
         email: 'test@example.com',
-        role: 'user',
+        roleId: 'user-role-id',
       };
       (jwt.decode as jest.Mock).mockReturnValue(payload);
 

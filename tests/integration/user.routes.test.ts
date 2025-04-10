@@ -1,6 +1,6 @@
 import { StatusCodes } from 'http-status-codes';
 import { agent, mockUsers, mockToken } from '../mocks';
-import { UserService } from '../../src/services/user.service';
+import { UserService } from '../../src/services';
 import { Request, Response, NextFunction } from 'express';
 import { setupBasicTests } from '../mocks/test-hooks';
 import 'express';
@@ -11,6 +11,7 @@ jest.mock('../../src/config/env.config', () => ({
   default: {
     ...jest.requireActual('../../src/config/env.config').default,
     ENCRYPTION_ENABLED: false,
+    RATE_LIMIT_ENABLED: false,
   },
 }));
 
@@ -24,7 +25,7 @@ declare module 'express' {
       id: string;
       userId?: number;
       email: string;
-      role: string;
+      roleId: string;
     };
   }
 }
@@ -58,14 +59,22 @@ const serializedMockUsers = mockUsers.map(user => ({
 // Mock JWT verification
 jest.mock('../../src/middleware/auth.middleware', () => {
   return {
-    authenticate: (req: Request, _res: Response, next: NextFunction) => {
-      if (req.headers.authorization) {
+    authenticate: (req: Request, res: Response, next: NextFunction) => {
+      if (req.headers.authorization && req.headers.authorization !== 'Bearer undefined') {
         // Simulate authenticated user based on headers
-        const role = typeof req.headers['x-role'] === 'string' ? req.headers['x-role'] : 'user';
-        const id = typeof req.headers['x-user-id'] === 'string' ? req.headers['x-user-id'] : '1';
-        req.user = { id, email: 'test@example.com', role };
+        const roleId = typeof req.headers['x-role'] === 'string' ? req.headers['x-role'] : 'user';
+        const id =
+          typeof req.headers['x-user-id'] === 'string'
+            ? req.headers['x-user-id']
+            : '9f983688-16f7-4969-9eb9-72eb7acbefa2';
+        req.user = { id, email: 'test@example.com', roleId };
+        next();
+      } else {
+        return res.status(StatusCodes.UNAUTHORIZED).json({
+          success: false,
+          error: 'Unauthorized',
+        });
       }
-      next();
     },
     authorize: (roles: string[]) => (req: Request, res: Response, next: NextFunction) => {
       if (!req.user) {
@@ -75,7 +84,7 @@ jest.mock('../../src/middleware/auth.middleware', () => {
         });
       }
 
-      if (roles && !roles.includes(req.user.role)) {
+      if (roles && !roles.includes(req.user.roleId)) {
         return res.status(StatusCodes.FORBIDDEN).json({
           success: false,
           error: 'Forbidden',
@@ -133,7 +142,6 @@ describe('User Routes', () => {
     it('should return 401 if not authenticated', async () => {
       // Act
       const response = await agent.get(`${API_PREFIX}/users`);
-
       // Assert
       expect(response.status).toBe(StatusCodes.UNAUTHORIZED);
       expect(response.body.success).toBe(false);
@@ -184,7 +192,7 @@ describe('User Routes', () => {
 
       // Act
       const response = await agent
-        .get(`${API_PREFIX}/users/1`)
+        .get(`${API_PREFIX}/users/9f983688-16f7-4969-9eb9-72eb7acbefa2`)
         .set('Authorization', `Bearer ${mockToken}`)
         .set('x-role', 'admin');
 
@@ -192,7 +200,7 @@ describe('User Routes', () => {
       expect(response.status).toBe(StatusCodes.OK);
       expect(response.body.success).toBe(true);
       expect(response.body.data).toEqual(serializedMockUsers[0]);
-      expect(userService.getUserById).toHaveBeenCalledWith(1);
+      expect(userService.getUserById).toHaveBeenCalledWith('9f983688-16f7-4969-9eb9-72eb7acbefa2');
     });
   });
 });

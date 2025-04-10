@@ -1,27 +1,40 @@
 import { StatusCodes } from 'http-status-codes';
-import { JwtPayload, NewUser, ServiceResponse, User, IAuthService, IUserService } from '../types';
+import { JwtPayload, NewUser, ServiceResponse, User } from '../types';
+import { IAuthService } from '../types/interfaces';
+import { IUserService } from '../types/interfaces';
 import { createServiceResponse } from '../utils/response.util';
 import { jwtUtil } from '../utils/jwt.util';
 import { UserService } from './user.service';
-import { Singleton } from '../utils/service.util';
-import { db } from '../config/database.config';
-import { eq } from 'drizzle-orm';
-import { role } from '../models';
+import { RoleService, ModuleAccess } from './role.service';
 
-@Singleton
+export interface RegisterUserData extends Omit<NewUser, 'id' | 'createdAt' | 'updatedAt'> {
+  moduleAccess?: ModuleAccess[];
+}
+
 export class AuthService implements IAuthService {
   private readonly userService: IUserService;
+  private readonly roleService: RoleService;
+  private static instance: AuthService;
 
-  constructor() {
-    this.userService = new UserService();
+  private constructor() {
+    this.userService = UserService.getInstance();
+    this.roleService = RoleService.getInstance();
+  }
+
+  /**
+   * Get singleton instance
+   */
+  public static getInstance(): AuthService {
+    if (!AuthService.instance) {
+      AuthService.instance = new AuthService();
+    }
+    return AuthService.instance;
   }
 
   /**
    * Register a new user
    */
-  async register(
-    userData: Omit<NewUser, 'id' | 'createdAt' | 'updatedAt'>,
-  ): Promise<ServiceResponse<Omit<User, 'password'>>> {
+  async register(userData: RegisterUserData): Promise<ServiceResponse<Omit<User, 'password'>>> {
     try {
       // Check if user already exists with the email
       const existingUserResult = await this.userService.getUserByEmail(userData.email);
@@ -35,9 +48,71 @@ export class AuthService implements IAuthService {
         );
       }
 
-      // Create new user
-      const result = await this.userService.createUser(userData);
-      const { password: _password, ...userWithoutPassword } = result.data!;
+      // If moduleAccess is provided, create a custom role for this user
+      let roleId: string | undefined = userData.roleId;
+
+      if (userData.moduleAccess && userData.moduleAccess.length > 0) {
+        // Create a new role with the provided module access
+        const roleName = `${userData.firstName} ${userData.lastName} Role`;
+        const roleResult = await this.roleService.createRole({
+          name: roleName,
+          description: `Custom role for ${userData.email}`,
+          moduleAccess: userData.moduleAccess,
+        });
+
+        if (!roleResult.success || !roleResult.data) {
+          return createServiceResponse<Omit<User, 'password'>>(
+            false,
+            undefined,
+            'Failed to create role for user',
+            StatusCodes.INTERNAL_SERVER_ERROR,
+          );
+        }
+
+        // Use the newly created role ID
+        roleId = roleResult.data.id;
+      }
+
+      // Make sure we have a roleId, either from input or newly created
+      if (!roleId) {
+        return createServiceResponse<Omit<User, 'password'>>(
+          false,
+          undefined,
+          'Role ID is required',
+          StatusCodes.BAD_REQUEST,
+        );
+      }
+
+      // Validate that the roleId exists in the database
+      if (userData.roleId) {
+        const roleResult = await this.roleService.getRoleById(userData.roleId);
+        if (!roleResult.success || !roleResult.data) {
+          return createServiceResponse<Omit<User, 'password'>>(
+            false,
+            undefined,
+            'Role not found',
+            StatusCodes.NOT_FOUND,
+          );
+        }
+      }
+
+      // Create new user with the assigned role
+      const { moduleAccess: _moduleAccess, ...userDataWithoutModuleAccess } = userData;
+      const result = await this.userService.createUser({
+        ...userDataWithoutModuleAccess,
+        roleId,
+      });
+
+      if (!result.success || !result.data) {
+        return createServiceResponse<Omit<User, 'password'>>(
+          false,
+          undefined,
+          result.error || 'Failed to create user',
+          StatusCodes.INTERNAL_SERVER_ERROR,
+        );
+      }
+
+      const { password: _password, ...userWithoutPassword } = result.data;
       return createServiceResponse(true, userWithoutPassword, undefined, result.statusCode);
     } catch (error) {
       return createServiceResponse<Omit<User, 'password'>>(
@@ -70,7 +145,7 @@ export class AuthService implements IAuthService {
       }
 
       // Generate JWT token
-      const token = await this.generateToken(verifyResult.data);
+      const token = this.generateToken(verifyResult.data);
 
       return createServiceResponse(true, {
         user: verifyResult.data,
@@ -89,16 +164,11 @@ export class AuthService implements IAuthService {
   /**
    * Generate JWT token
    */
-  private async generateToken(user: User): Promise<string> {
-    // Get the role name from the role id
-    const roleResult = await db.select().from(role).where(eq(role.id, user.roleId)).limit(1);
-
-    const roleName = roleResult.length ? roleResult[0].name : user.roleId;
-
+  private generateToken(user: User): string {
     const payload: JwtPayload = {
       userId: user.id,
       email: user.email,
-      role: roleName,
+      roleId: user.roleId,
     };
 
     return jwtUtil.generateToken(payload);
@@ -109,18 +179,21 @@ export class AuthService implements IAuthService {
    */
   async refreshToken(userId: string): Promise<ServiceResponse<{ token: string }>> {
     try {
+      // Get user by ID
       const userResult = await this.userService.getUserById(userId);
 
       if (!userResult.success || !userResult.data) {
         return createServiceResponse<{ token: string }>(
           false,
           undefined,
-          'Invalid user',
-          StatusCodes.UNAUTHORIZED,
+          'User not found',
+          StatusCodes.NOT_FOUND,
         );
       }
 
-      const token = await this.generateToken(userResult.data);
+      // Generate new token
+      const token = this.generateToken(userResult.data);
+
       return createServiceResponse(true, { token });
     } catch (error) {
       return createServiceResponse<{ token: string }>(

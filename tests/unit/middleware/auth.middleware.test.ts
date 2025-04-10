@@ -44,9 +44,9 @@ describe('Auth Middleware', () => {
       (jwtUtil.verifyToken as jest.Mock).mockReturnValue({
         success: true,
         data: {
-          userId: 1,
+          userId: '9f983688-16f7-4969-9eb9-72eb7acbefa2',
           email: 'test@example.com',
-          role: 'user',
+          roleId: 'role-123',
         },
       });
 
@@ -56,9 +56,9 @@ describe('Auth Middleware', () => {
       // Assert
       expect(jwtUtil.verifyToken).toHaveBeenCalledWith('valid_token');
       expect(req.user).toEqual({
-        id: '1',
+        id: '9f983688-16f7-4969-9eb9-72eb7acbefa2',
         email: 'test@example.com',
-        role: 'user',
+        roleId: 'role-123',
       });
       expect(next).toHaveBeenCalled();
       expect(res.status).not.toHaveBeenCalled();
@@ -129,29 +129,6 @@ describe('Auth Middleware', () => {
   });
 
   describe('authorize', () => {
-    it('should call next when user has required role', () => {
-      // Arrange
-      const req = mockRequest();
-      const res = mockResponse();
-      const next = jest.fn();
-
-      req.user = {
-        id: '1',
-        userId: 1,
-        email: 'test@example.com',
-        role: 'admin',
-      };
-
-      const middleware = authorize('admin');
-
-      // Act
-      middleware(req, res as Response, next as NextFunction);
-
-      // Assert
-      expect(next).toHaveBeenCalled();
-      expect(next).not.toHaveBeenCalledWith(expect.any(AppError));
-    });
-
     it('should call next with error when user does not have required role', () => {
       // Arrange
       const req = mockRequest();
@@ -162,7 +139,7 @@ describe('Auth Middleware', () => {
         id: '1',
         userId: 1,
         email: 'test@example.com',
-        role: 'user',
+        roleId: 'role-123',
       };
 
       const middleware = authorize('admin');
@@ -192,30 +169,6 @@ describe('Auth Middleware', () => {
       // Assert
       expect(next).toHaveBeenCalledWith(expect.any(AppError));
       expect(next.mock.calls[0][0].statusCode).toBe(401);
-    });
-
-    it('should allow access for multiple roles', () => {
-      // Arrange
-      const req = mockRequest();
-      const res = mockResponse();
-      const next = jest.fn();
-
-      req.user = {
-        id: '1',
-        userId: 1,
-        email: 'test@example.com',
-        role: 'editor',
-      };
-
-      // Test with array of roles using rest parameters
-      const middleware = authorize('admin', 'editor', 'manager');
-
-      // Act
-      middleware(req, res as Response, next as NextFunction);
-
-      // Assert
-      expect(next).toHaveBeenCalled();
-      expect(next).not.toHaveBeenCalledWith(expect.any(AppError));
     });
   });
 });

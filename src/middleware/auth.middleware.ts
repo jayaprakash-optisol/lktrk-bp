@@ -21,10 +21,10 @@ export const authenticate = (req: AuthRequest, _res: Response, next: NextFunctio
     req.user = {
       id: decoded.data.userId.toString(),
       email: decoded.data.email,
-      role: decoded.data.role,
+      roleId: decoded.data.roleId,
     };
     next();
-  } catch (_) {
+  } catch (error) {
     next(new AppError('Invalid token', 401));
   }
 };
@@ -37,7 +37,8 @@ export const authorize = (...roles: string[]) => {
         throw new AppError('User not authenticated', 401);
       }
 
-      if (!roles.includes(req.user.role)) {
+      const userRole = req.user.role?.toString() || '';
+      if (!roles.includes(userRole)) {
         throw new AppError('Insufficient permissions', 403);
       }
 

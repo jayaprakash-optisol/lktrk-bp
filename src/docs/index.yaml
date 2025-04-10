@@ -4,7 +4,8 @@ components:
       type: object
       properties:
         id:
-          type: integer
+          type: string
+          format: uuid
           description: User ID
         email:
           type: string
@@ -16,19 +17,22 @@ components:
         lastName:
           type: string
           description: User last name
-        role:
+        roleId:
           type: string
-          enum: [admin, user]
-          description: User role
+          format: uuid
+          description: ID of the user role
 
     UserFull:
       allOf:
         - $ref: '#/components/schemas/UserBasic'
         - type: object
           properties:
-            isActive:
+            phoneNumber:
+              type: string
+              description: User phone number
+            isDeleted:
               type: boolean
-              description: User account status
+              description: User deletion status
             createdAt:
               type: string
               format: date-time
@@ -37,3 +41,9 @@ components:
               type: string
               format: date-time
               description: User last update timestamp
+
+    AccessLevel:
+      type: string
+      enum: [no_access, view_access, edit_access, full_access]
+      description: Access level for a module
+      example: view_access

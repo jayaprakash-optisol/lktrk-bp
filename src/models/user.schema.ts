@@ -9,7 +9,7 @@ export const user = pgTable('user', {
   firstName: varchar('first_name').notNull(),
   lastName: varchar('last_name').notNull(),
   email: varchar('email').notNull().unique(),
-  phoneNumber: varchar('phone_number'),
+  phoneNumber: varchar('phone_number').notNull(),
   password: varchar('password').notNull(),
   roleId: uuid('role_id')
     .notNull()

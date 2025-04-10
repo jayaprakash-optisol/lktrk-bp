@@ -18,8 +18,6 @@ import { rateLimiter } from './middleware/rateLimiter.middleware';
 import { stream } from './utils/logger';
 import swaggerUi from 'swagger-ui-express';
 import swaggerSpec from './docs/swagger';
-
-// Import combined routes
 import routes from './routes';
 
 class App {

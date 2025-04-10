@@ -8,7 +8,7 @@ interface RequestWithUser extends Request {
     id: string;
     userId?: number;
     email: string;
-    role: string;
+    roleId: string;
   };
 }
 

@@ -1,5 +1,5 @@
-import { UserController } from '../../../src/controllers/user.controller';
-import { UserService } from '../../../src/services/user.service';
+import { UserController } from '../../../src/controllers';
+import { UserService } from '../../../src/services';
 import { mockRequest, mockNext, mockUsers, mockAuthRequest } from '../../mocks';
 
 // Mock the UserService
@@ -10,7 +10,6 @@ jest.mock('../../../src/services/user.service', () => {
   const updateUser = jest.fn();
   const deleteUser = jest.fn();
   const getUserByEmail = jest.fn();
-  const createUser = jest.fn();
 
   return {
     UserService: {
@@ -20,7 +19,6 @@ jest.mock('../../../src/services/user.service', () => {
         updateUser,
         deleteUser,
         getUserByEmail,
-        createUser,
       })),
     },
   };
@@ -237,7 +235,7 @@ describe('UserController', () => {
       await userController.getUserById(req, res, mockNext);
 
       // Assert
-      expect(mockUserService.getUserById).toHaveBeenCalledWith(1);
+      expect(mockUserService.getUserById).toHaveBeenCalledWith('1');
       expect(res.status).toHaveBeenCalledWith(200);
       expect(res.json).toHaveBeenCalledWith({
         success: true,
@@ -263,33 +261,13 @@ describe('UserController', () => {
       await userController.getUserById(req, res, mockNext);
 
       // Assert
-      expect(mockUserService.getUserById).toHaveBeenCalledWith(999);
+      expect(mockUserService.getUserById).toHaveBeenCalledWith('999');
       expect(mockNext).toHaveBeenCalledWith(
         expect.objectContaining({
           statusCode: 404,
           message: 'User not found',
         }),
       );
-    });
-
-    it('should handle invalid id parameter', async () => {
-      // Arrange
-      const req = mockRequest();
-      const res = mockResponse();
-      req.params = { id: 'invalid' };
-
-      // Act
-      await userController.getUserById(req, res, mockNext);
-
-      // Assert
-      expect(mockUserService.getUserById).not.toHaveBeenCalled();
-      expect(res.status).toHaveBeenCalledWith(400);
-      expect(res.json).toHaveBeenCalledWith({
-        success: false,
-        message: 'Operation failed',
-        error: 'Invalid user ID',
-        statusCode: 400,
-      });
     });
 
     it('should handle service errors', async () => {
@@ -338,7 +316,7 @@ describe('UserController', () => {
       // Arrange
       const req = mockAuthRequest(mockUsers[0]);
       const res = mockResponse();
-      req.params = { id: '1' };
+      req.params = { id: '9f983688-16f7-4969-9eb9-72eb7acbefa2' };
       req.body = {
         firstName: 'Updated',
         lastName: 'User',
@@ -359,10 +337,13 @@ describe('UserController', () => {
       await userController.updateUser(req, res, mockNext);
 
       // Assert
-      expect(mockUserService.updateUser).toHaveBeenCalledWith(1, {
-        firstName: 'Updated',
-        lastName: 'User',
-      });
+      expect(mockUserService.updateUser).toHaveBeenCalledWith(
+        '9f983688-16f7-4969-9eb9-72eb7acbefa2',
+        {
+          firstName: 'Updated',
+          lastName: 'User',
+        },
+      );
       expect(res.status).toHaveBeenCalledWith(200);
       expect(res.json).toHaveBeenCalledWith({
         success: true,
@@ -381,7 +362,7 @@ describe('UserController', () => {
       // Arrange
       const req = mockAuthRequest(mockUsers[0]);
       const res = mockResponse();
-      req.params = { id: '1' };
+      req.params = { id: '9f983688-16f7-4969-9eb9-72eb7acbefa3' };
       req.body = {
         firstName: 'Updated',
       };
@@ -421,29 +402,6 @@ describe('UserController', () => {
           message: 'Forbidden',
         }),
       );
-    });
-
-    it('should handle invalid id parameter', async () => {
-      // Arrange
-      const req = mockAuthRequest(mockUsers[0]);
-      const res = mockResponse();
-      req.params = { id: 'invalid' };
-      req.body = {
-        firstName: 'Updated',
-      };
-
-      // Act
-      await userController.updateUser(req, res, mockNext);
-
-      // Assert
-      expect(mockUserService.updateUser).not.toHaveBeenCalled();
-      expect(res.status).toHaveBeenCalledWith(400);
-      expect(res.json).toHaveBeenCalledWith({
-        success: false,
-        message: 'Operation failed',
-        error: 'Invalid user ID',
-        statusCode: 400,
-      });
     });
 
     it('should handle service errors', async () => {
@@ -491,7 +449,7 @@ describe('UserController', () => {
       // Arrange
       const req = mockAuthRequest(mockUsers[1]); // Admin user
       const res = mockResponse();
-      req.params = { id: '1' };
+      req.params = { id: '9f983688-16f7-4969-9eb9-72eb7acbefa2' };
 
       mockUserService.deleteUser.mockResolvedValue({
         success: true,
@@ -504,7 +462,9 @@ describe('UserController', () => {
       await userController.deleteUser(req, res, mockNext);
 
       // Assert
-      expect(mockUserService.deleteUser).toHaveBeenCalledWith(1);
+      expect(mockUserService.deleteUser).toHaveBeenCalledWith(
+        '9f983688-16f7-4969-9eb9-72eb7acbefa2',
+      );
       expect(res.status).toHaveBeenCalledWith(200);
       expect(res.json).toHaveBeenCalledWith({
         success: true,
@@ -556,26 +516,6 @@ describe('UserController', () => {
       );
     });
 
-    it('should handle invalid id parameter', async () => {
-      // Arrange
-      const req = mockAuthRequest(mockUsers[0]);
-      const res = mockResponse();
-      req.params = { id: 'invalid' };
-
-      // Act
-      await userController.deleteUser(req, res, mockNext);
-
-      // Assert
-      expect(mockUserService.deleteUser).not.toHaveBeenCalled();
-      expect(res.status).toHaveBeenCalledWith(400);
-      expect(res.json).toHaveBeenCalledWith({
-        success: false,
-        message: 'Operation failed',
-        error: 'Invalid user ID',
-        statusCode: 400,
-      });
-    });
-
     it('should handle service errors', async () => {
       // Arrange
       const req = mockAuthRequest(mockUsers[0]);
@@ -604,148 +544,6 @@ describe('UserController', () => {
 
       // Act
       await userController.deleteUser(req, res, mockNext);
-
-      // Assert
-      expect(mockNext).toHaveBeenCalledWith(error);
-    });
-  });
-
-  describe('createUser', () => {
-    it('should create user successfully', async () => {
-      // Arrange
-      const req = mockRequest();
-      const res = mockResponse();
-      req.body = {
-        email: 'test@example.com',
-        password: 'password123',
-        firstName: 'Test',
-        lastName: 'User',
-        role: 'user',
-      };
-
-      const newUser = {
-        id: 3,
-        email: 'test@example.com',
-        firstName: 'Test',
-        lastName: 'User',
-        role: 'user',
-        isActive: true,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      };
-
-      mockUserService.createUser.mockResolvedValue({
-        success: true,
-        data: newUser,
-        statusCode: 201,
-        message: 'User created successfully',
-      });
-
-      // Act
-      await userController.createUser(req, res, mockNext);
-
-      // Assert
-      expect(mockUserService.createUser).toHaveBeenCalledWith({
-        email: 'test@example.com',
-        password: 'password123',
-        firstName: 'Test',
-        lastName: 'User',
-        role: 'user',
-      });
-      expect(res.status).toHaveBeenCalledWith(200);
-      expect(res.json).toHaveBeenCalledWith({
-        success: true,
-        message: 'User created successfully',
-        data: newUser,
-        error: undefined,
-        statusCode: 200,
-      });
-      expect(mockNext).not.toHaveBeenCalled();
-    });
-
-    it('should handle missing required fields', async () => {
-      // Arrange
-      const req = mockRequest();
-      const res = mockResponse();
-      req.body = {
-        firstName: 'Test',
-        lastName: 'User',
-        // Missing email and password
-      };
-
-      // Act
-      await userController.createUser(req, res, mockNext);
-
-      // Assert
-      expect(mockUserService.createUser).not.toHaveBeenCalled();
-      expect(res.status).toHaveBeenCalledWith(400);
-      expect(res.json).toHaveBeenCalledWith({
-        success: false,
-        message: 'Operation failed',
-        error: 'Email and password are required',
-        statusCode: 400,
-      });
-    });
-
-    it('should handle service errors', async () => {
-      // Arrange
-      const req = mockRequest();
-      const res = mockResponse();
-      req.body = {
-        email: 'test@example.com',
-        password: 'password123',
-        firstName: 'Test',
-        lastName: 'User',
-      };
-
-      const error = new Error('Database error');
-      mockUserService.createUser.mockRejectedValue(error);
-
-      // Act
-      await userController.createUser(req, res, mockNext);
-
-      // Assert
-      expect(mockUserService.createUser).toHaveBeenCalled();
-      expect(mockNext).toHaveBeenCalledWith(error);
-    });
-
-    it('should handle duplicate email error', async () => {
-      // Arrange
-      const req = mockRequest();
-      const res = mockResponse();
-      req.body = {
-        email: 'existing@example.com',
-        password: 'password123',
-        firstName: 'Test',
-        lastName: 'User',
-      };
-
-      const error = { statusCode: 409, message: 'Email already exists' };
-      mockUserService.createUser.mockRejectedValue(error);
-
-      // Act
-      await userController.createUser(req, res, mockNext);
-
-      // Assert
-      expect(mockNext).toHaveBeenCalledWith(error);
-    });
-
-    it('should handle validation errors', async () => {
-      // Arrange
-      const req = mockRequest();
-      const res = mockResponse();
-      req.body = {
-        email: 'invalid-email',
-        password: 'short', // Too short
-        firstName: 'Test',
-        lastName: 'User',
-      };
-
-      const error = { statusCode: 400, message: 'Invalid email format' };
-      mockUserService.createUser.mockRejectedValue(error);
-
-      // Act
-      await userController.createUser(req, res, mockNext);
 
       // Assert
       expect(mockNext).toHaveBeenCalledWith(error);

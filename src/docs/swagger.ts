@@ -38,7 +38,7 @@ const swaggerDefinition = {
     schemas: {
       User: {
         type: 'object',
-        required: ['id', 'email', 'role', 'isActive', 'createdAt', 'updatedAt'],
+        required: ['id', 'email', 'roleId', 'firstName', 'lastName', 'createdAt', 'updatedAt'],
         properties: {
           id: {
             type: 'string',
@@ -58,14 +58,18 @@ const swaggerDefinition = {
             type: 'string',
             description: 'User last name',
           },
-          role: {
+          roleId: {
             type: 'string',
-            enum: ['admin', 'user'],
-            description: 'User role',
+            format: 'uuid',
+            description: 'ID of the user role',
           },
-          isActive: {
+          phoneNumber: {
+            type: 'string',
+            description: 'User phone number',
+          },
+          isDeleted: {
             type: 'boolean',
-            description: 'User account status',
+            description: 'User deletion status',
           },
           createdAt: {
             type: 'string',
@@ -79,281 +83,82 @@ const swaggerDefinition = {
           },
         },
       },
-      Equipment: {
+      Role: {
         type: 'object',
-        required: ['id', 'equipmentName', 'equipmentType', 'createdAt', 'updatedAt'],
+        required: ['id', 'name', 'createdAt', 'updatedAt'],
         properties: {
           id: {
             type: 'string',
             format: 'uuid',
-            description: 'Equipment ID',
+            description: 'Role ID',
           },
-          equipmentName: {
+          name: {
             type: 'string',
-            description: 'Equipment name',
-          },
-          equipmentType: {
-            type: 'string',
-            enum: ['compressor', 'pump', 'valve', 'tank', 'vessel', 'pipeline'],
-            description: 'Type of equipment',
-          },
-          locationLatitude: {
-            type: 'number',
-            format: 'double',
-            description: 'Equipment location latitude',
-          },
-          locationLongitude: {
-            type: 'number',
-            format: 'double',
-            description: 'Equipment location longitude',
-          },
-          notes: {
-            type: 'string',
-            description: 'Additional notes about the equipment',
-          },
-          isDeleted: {
-            type: 'boolean',
-            description: 'Soft delete status',
-          },
-          createdAt: {
-            type: 'string',
-            format: 'date-time',
-            description: 'Creation timestamp',
-          },
-          updatedAt: {
-            type: 'string',
-            format: 'date-time',
-            description: 'Last update timestamp',
-          },
-        },
-      },
-      Component: {
-        type: 'object',
-        required: [
-          'id',
-          'componentSubType',
-          'monitoringFrequency',
-          'accessDifficulty',
-          'createdAt',
-          'updatedAt',
-        ],
-        properties: {
-          id: {
-            type: 'string',
-            format: 'uuid',
-            description: 'Component ID',
-          },
-          componentSubType: {
-            type: 'string',
-            enum: ['connector', 'flange', 'valve', 'relief', 'threaded', 'other'],
-            description: 'Subtype of component',
-          },
-          monitoringFrequency: {
-            type: 'string',
-            enum: ['daily', 'weekly', 'monthly', 'quarterly', 'biannual', 'annual'],
-            description: 'Frequency of monitoring',
-          },
-          accessDifficulty: {
-            type: 'string',
-            enum: ['easy', 'moderate', 'difficult', 'very_difficult'],
-            description: 'Difficulty level of accessing the component',
-          },
-          locationLatitude: {
-            type: 'number',
-            format: 'double',
-            description: 'Component location latitude',
-          },
-          locationLongitude: {
-            type: 'number',
-            format: 'double',
-            description: 'Component location longitude',
-          },
-          notes: {
-            type: 'string',
-            description: 'Additional notes about the component',
-          },
-          isDeleted: {
-            type: 'boolean',
-            description: 'Soft delete status',
-          },
-          createdAt: {
-            type: 'string',
-            format: 'date-time',
-            description: 'Creation timestamp',
-          },
-          updatedAt: {
-            type: 'string',
-            format: 'date-time',
-            description: 'Last update timestamp',
-          },
-        },
-      },
-      Survey: {
-        type: 'object',
-        required: [
-          'id',
-          'customerName',
-          'projectId',
-          'facilityId',
-          'zone',
-          'regulationId',
-          'monitoringFrequency',
-          'surveyType',
-          'priority',
-          'surveyMethod',
-          'technology',
-          'primaryTechnicianId',
-          'date',
-          'createdAt',
-          'updatedAt',
-        ],
-        properties: {
-          id: {
-            type: 'string',
-            format: 'uuid',
-            description: 'Survey ID',
-          },
-          customerName: {
-            type: 'string',
-            description: 'Customer name',
-          },
-          projectId: {
-            type: 'string',
-            format: 'uuid',
-            description: 'Associated project ID',
-          },
-          facilityId: {
-            type: 'string',
-            format: 'uuid',
-            description: 'Associated facility ID',
-          },
-          zone: {
-            type: 'string',
-            enum: ['north', 'south', 'east', 'west', 'central'],
-            description: 'Facility zone surveyed',
-          },
-          regulationId: {
-            type: 'string',
-            format: 'uuid',
-            description: 'Associated regulation ID',
-          },
-          monitoringFrequency: {
-            type: 'string',
-            enum: ['daily', 'weekly', 'monthly', 'quarterly', 'biannual', 'annual'],
-            description: 'Frequency of monitoring',
-          },
-          surveyType: {
-            type: 'string',
-            enum: ['routine', 'follow_up', 'emergency', 'baseline'],
-            description: 'Type of survey',
-          },
-          priority: {
-            type: 'string',
-            enum: ['low', 'medium', 'high', 'critical'],
-            description: 'Priority level of the survey',
-          },
-          surveyMethod: {
-            type: 'string',
-            enum: ['visual', 'optical_gas_imaging', 'measurement', 'other'],
-            description: 'Method used for the survey',
-          },
-          technology: {
-            type: 'string',
-            enum: ['flir_camera', 'tvs2000', 'sniffdog', 'prototype'],
-            description: 'Technology used for the survey',
-          },
-          primaryTechnicianId: {
-            type: 'string',
-            format: 'uuid',
-            description: 'ID of the primary technician',
-          },
-          date: {
-            type: 'string',
-            format: 'date-time',
-            description: 'Date of the survey',
-          },
-          notes: {
-            type: 'string',
-            description: 'Additional notes about the survey',
-          },
-          isDeleted: {
-            type: 'boolean',
-            description: 'Soft delete status',
-          },
-          createdAt: {
-            type: 'string',
-            format: 'date-time',
-            description: 'Creation timestamp',
-          },
-          updatedAt: {
-            type: 'string',
-            format: 'date-time',
-            description: 'Last update timestamp',
-          },
-        },
-      },
-      Pending: {
-        type: 'object',
-        required: ['id', 'title', 'status', 'dueDate', 'assignedToId', 'createdAt', 'updatedAt'],
-        properties: {
-          id: {
-            type: 'string',
-            format: 'uuid',
-            description: 'Pending item ID',
-          },
-          title: {
-            type: 'string',
-            description: 'Title of the pending item',
+            description: 'Role name',
           },
           description: {
             type: 'string',
-            description: 'Detailed description of the pending item',
-          },
-          status: {
-            type: 'string',
-            enum: ['new', 'in_progress', 'blocked', 'completed'],
-            description: 'Current status of the pending item',
-          },
-          priority: {
-            type: 'string',
-            enum: ['low', 'medium', 'high', 'critical'],
-            description: 'Priority level of the pending item',
-          },
-          dueDate: {
-            type: 'string',
-            format: 'date-time',
-            description: 'Due date for the pending item',
-          },
-          assignedToId: {
-            type: 'string',
-            format: 'uuid',
-            description: 'ID of the user assigned to this pending item',
-          },
-          relatedItemId: {
-            type: 'string',
-            format: 'uuid',
-            description: 'ID of the related item (equipment, component, or survey)',
-          },
-          relatedItemType: {
-            type: 'string',
-            enum: ['equipment', 'component', 'survey'],
-            description: 'Type of the related item',
-          },
-          isDeleted: {
-            type: 'boolean',
-            description: 'Soft delete status',
+            description: 'Role description',
           },
           createdAt: {
             type: 'string',
             format: 'date-time',
-            description: 'Creation timestamp',
+            description: 'Role creation timestamp',
           },
           updatedAt: {
             type: 'string',
             format: 'date-time',
-            description: 'Last update timestamp',
+            description: 'Role last update timestamp',
+          },
+          isDeleted: {
+            type: 'boolean',
+            description: 'Role deletion status',
           },
         },
+      },
+      ModuleAccess: {
+        type: 'object',
+        required: ['module', 'accessLevel'],
+        properties: {
+          module: {
+            type: 'string',
+            enum: [
+              'dashboard',
+              'projects',
+              'surveys',
+              'calendar',
+              'customers',
+              'components',
+              'equipments',
+              'facility',
+              'roles',
+              'reports',
+            ],
+            description: 'Module name',
+          },
+          accessLevel: {
+            type: 'string',
+            enum: ['no_access', 'view_access', 'edit_access', 'full_access'],
+            description: 'Access level for the module',
+          },
+        },
+      },
+      RoleWithAccess: {
+        allOf: [
+          { $ref: '#/components/schemas/Role' },
+          {
+            type: 'object',
+            properties: {
+              moduleAccess: {
+                type: 'array',
+                items: {
+                  $ref: '#/components/schemas/ModuleAccess',
+                },
+                description: 'Module access permissions',
+              },
+            },
+          },
+        ],
       },
       Error: {
         type: 'object',
@@ -452,22 +257,6 @@ const swaggerDefinition = {
     {
       name: 'Users',
       description: 'User management endpoints',
-    },
-    {
-      name: 'Equipment',
-      description: 'Equipment management endpoints',
-    },
-    {
-      name: 'Components',
-      description: 'Component management endpoints',
-    },
-    {
-      name: 'Surveys',
-      description: 'Survey management endpoints',
-    },
-    {
-      name: 'Pending',
-      description: 'Pending items management endpoints',
     },
   ],
 };
