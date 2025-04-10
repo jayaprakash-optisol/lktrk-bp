@@ -23,8 +23,9 @@ export const testConnection = async (): Promise<void> => {
     const client = await pool.connect();
     logger.info('✅ PostgreSQL connected successfully');
     client.release();
-  } catch (err: any) {
-    logger.error(`❌ PostgreSQL connection error: ${err.message}`);
+  } catch (err: unknown) {
+    const error = err instanceof Error ? err : new Error(String(err));
+    logger.error(`❌ PostgreSQL connection error: ${error.message}`);
   }
 };
 

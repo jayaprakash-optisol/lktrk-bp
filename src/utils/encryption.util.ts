@@ -95,14 +95,14 @@ export const decrypt = (encryptedData: string): string => {
 };
 
 /**
- * Check if a string is encrypted
+ * Checks if a data object is encrypted
  * @param data The data to check
  * @returns True if the data is encrypted, false otherwise
  */
-export const isEncrypted = (data: any): boolean => {
+export const isEncrypted = (data: unknown): boolean => {
   if (typeof data !== 'object' || data === null) {
     return false;
   }
 
-  return 'encrypted' in data && typeof data.encrypted === 'string';
+  return 'encrypted' in data && typeof (data as Record<string, unknown>).encrypted === 'string';
 };

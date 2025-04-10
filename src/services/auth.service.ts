@@ -1,26 +1,19 @@
 import { StatusCodes } from 'http-status-codes';
-import { JwtPayload, NewUser, ServiceResponse, User } from '../types';
-import { IAuthService, IUserService } from '../types/interfaces';
+import { JwtPayload, NewUser, ServiceResponse, User, IAuthService, IUserService } from '../types';
 import { createServiceResponse } from '../utils/response.util';
 import { jwtUtil } from '../utils/jwt.util';
 import { UserService } from './user.service';
+import { Singleton } from '../utils/service.util';
+import { db } from '../config/database.config';
+import { eq } from 'drizzle-orm';
+import { role } from '../models';
 
+@Singleton
 export class AuthService implements IAuthService {
   private readonly userService: IUserService;
-  private static instance: AuthService;
 
-  private constructor() {
-    this.userService = UserService.getInstance();
-  }
-
-  /**
-   * Get singleton instance
-   */
-  public static getInstance(): AuthService {
-    if (!AuthService.instance) {
-      AuthService.instance = new AuthService();
-    }
-    return AuthService.instance;
+  constructor() {
+    this.userService = new UserService();
   }
 
   /**
@@ -77,7 +70,7 @@ export class AuthService implements IAuthService {
       }
 
       // Generate JWT token
-      const token = this.generateToken(verifyResult.data);
+      const token = await this.generateToken(verifyResult.data);
 
       return createServiceResponse(true, {
         user: verifyResult.data,
@@ -96,11 +89,16 @@ export class AuthService implements IAuthService {
   /**
    * Generate JWT token
    */
-  private generateToken(user: User): string {
+  private async generateToken(user: User): Promise<string> {
+    // Get the role name from the role id
+    const roleResult = await db.select().from(role).where(eq(role.id, user.roleId)).limit(1);
+
+    const roleName = roleResult.length ? roleResult[0].name : user.roleId;
+
     const payload: JwtPayload = {
       userId: user.id,
       email: user.email,
-      role: user.role,
+      role: roleName,
     };
 
     return jwtUtil.generateToken(payload);
@@ -109,23 +107,20 @@ export class AuthService implements IAuthService {
   /**
    * Refresh token
    */
-  async refreshToken(userId: number): Promise<ServiceResponse<{ token: string }>> {
+  async refreshToken(userId: string): Promise<ServiceResponse<{ token: string }>> {
     try {
-      // Get user by ID
       const userResult = await this.userService.getUserById(userId);
 
       if (!userResult.success || !userResult.data) {
         return createServiceResponse<{ token: string }>(
           false,
           undefined,
-          'User not found',
-          StatusCodes.NOT_FOUND,
+          'Invalid user',
+          StatusCodes.UNAUTHORIZED,
         );
       }
 
-      // Generate new token
-      const token = this.generateToken(userResult.data);
-
+      const token = await this.generateToken(userResult.data);
       return createServiceResponse(true, { token });
     } catch (error) {
       return createServiceResponse<{ token: string }>(

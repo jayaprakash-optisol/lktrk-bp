@@ -1,0 +1,269 @@
+paths:
+  /components:
+    get:
+      tags:
+        - Components
+      summary: Get all components
+      description: Retrieve a paginated list of all components
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+          description: Page number
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            minimum: 1
+            default: 10
+          description: Number of items per page
+      responses:
+        '200':
+          description: List of components successfully retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      items:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Component'
+                      total:
+                        type: integer
+                        example: 50
+                      page:
+                        type: integer
+                        example: 1
+                      limit:
+                        type: integer
+                        example: 10
+                      totalPages:
+                        type: integer
+                        example: 5
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+    post:
+      tags:
+        - Components
+      summary: Create new component
+      description: Create a new component record
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - componentSubType
+                - monitoringFrequency
+                - accessDifficulty
+              properties:
+                componentSubType:
+                  type: string
+                  enum: [connector, flange, valve, relief, threaded, other]
+                  example: 'valve'
+                monitoringFrequency:
+                  type: string
+                  enum: [daily, weekly, monthly, quarterly, biannual, annual]
+                  example: 'quarterly'
+                accessDifficulty:
+                  type: string
+                  enum: [easy, moderate, difficult, very_difficult]
+                  example: 'moderate'
+                locationLatitude:
+                  type: number
+                  format: double
+                  example: 45.4215
+                locationLongitude:
+                  type: number
+                  format: double
+                  example: -75.6972
+                notes:
+                  type: string
+                  example: 'Main bypass valve for pump 2'
+      responses:
+        '201':
+          description: Component created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: 'Component created successfully'
+                  data:
+                    $ref: '#/components/schemas/Component'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /components/{id}:
+    get:
+      tags:
+        - Components
+      summary: Get component by ID
+      description: Retrieve a specific component by its ID
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Component unique identifier
+      responses:
+        '200':
+          description: Component successfully retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    $ref: '#/components/schemas/Component'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+    put:
+      tags:
+        - Components
+      summary: Update component
+      description: Update an existing component record
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Component unique identifier
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                componentSubType:
+                  type: string
+                  enum: [connector, flange, valve, relief, threaded, other]
+                  example: 'flange'
+                monitoringFrequency:
+                  type: string
+                  enum: [daily, weekly, monthly, quarterly, biannual, annual]
+                  example: 'monthly'
+                accessDifficulty:
+                  type: string
+                  enum: [easy, moderate, difficult, very_difficult]
+                  example: 'difficult'
+                locationLatitude:
+                  type: number
+                  format: double
+                  example: 45.4225
+                locationLongitude:
+                  type: number
+                  format: double
+                  example: -75.6982
+                notes:
+                  type: string
+                  example: 'Updated notes for component'
+      responses:
+        '200':
+          description: Component updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: 'Component updated successfully'
+                  data:
+                    $ref: '#/components/schemas/Component'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+    delete:
+      tags:
+        - Components
+      summary: Delete component
+      description: Soft delete a component record
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Component unique identifier
+      responses:
+        '200':
+          description: Component deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: 'Component deleted successfully'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '500':
+          $ref: '#/components/responses/ServerError'

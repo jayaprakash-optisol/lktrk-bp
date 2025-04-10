@@ -1,65 +1,3 @@
-A Robust Express TypeScript backend application.
-
-## Features
-
-- **RESTful API** with Express.js and TypeScript
-- **PostgreSQL database** with Drizzle ORM
-- **Redis** for rate limiting and caching
-- **Authentication & Authorization** using JWT
-- **Input validation** using Zod
-- **API documentation** with Swagger
-- **Comprehensive error handling**
-- **Logging** with Winston
-- **Email service** with Nodemailer
-- **Security** with Helmet and additional security middleware
-- **Health check endpoints** for monitoring
-- **Docker support** for easy deployment
-- **Testing setup** with Jest
-
-## Tech Stack
-
-- **Node.js & Express.js** - Backend framework
-- **TypeScript** - Type safety and maintainability
-- **PostgreSQL** - Primary database
-- **Drizzle ORM** - Database ORM
-- **Redis** - Caching and rate limiting
-- **Zod** - Input validation
-- **JWT** - Authentication
-- **Helmet** - Security best practices
-- **Winston & Morgan** - Logging
-- **Swagger** - API documentation
-- **Nodemailer** - Email service
-- **Jest** - Testing
-- **Docker & Docker Compose** - Containerization
-
-## Project Structure
-
-```
-ts-node-express-boilerplate/
-├── src/
-│   ├── config/        # Application configuration
-│   ├── controllers/   # Route controllers
-│   ├── database/      # Database setup and migrations
-│   ├── docs/          # API documentation
-│   ├── middleware/    # Express middleware
-│   ├── models/        # Data models and schemas
-│   ├── routes/        # API routes
-│   ├── services/      # Business logic
-│   ├── types/         # TypeScript type definitions
-│   ├── utils/         # Utility functions
-│   ├── validators/    # Request validation
-│   ├── app.ts         # Express app setup
-│   ├── index.ts       # Application entry point
-│   └── server.ts      # HTTP server setup
-├── tests/             # Test files
-├── .env               # Environment variables
-├── .env.example       # Example environment variables
-├── .env.test          # Test environment variables
-├── docker-compose.yml # Docker Compose config
-├── package.json       # Project dependencies and scripts
-└── tsconfig.json      # TypeScript configuration
-```
-
 ## Getting Started
 
 ### Prerequisites
@@ -74,8 +12,8 @@ ts-node-express-boilerplate/
 1. Clone the repository
 
    ```
-   git clone https://github.com/yourusername/ts-node-express-boilerplate.git
-   cd ts-node-express-boilerplate
+   git clone https://github.com/yourusername/leaktrak-api.git
+   cd leaktrak-api
    ```
 
 2. Install dependencies
@@ -122,13 +60,13 @@ http://localhost:3000/api-docs
 
 ## Database Management
 
-- Generate database types:
+- Generate database migratons:
   ```
-  npm run generate-types
+  npm run db:generate
   ```
 - Run migrations:
   ```
-  npm run migrate
+  npm run db:push
   ```
 - Seed the database:
   ```

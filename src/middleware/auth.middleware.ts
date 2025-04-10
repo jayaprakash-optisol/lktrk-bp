@@ -24,7 +24,7 @@ export const authenticate = (req: AuthRequest, _res: Response, next: NextFunctio
       role: decoded.data.role,
     };
     next();
-  } catch (error) {
+  } catch (_) {
     next(new AppError('Invalid token', 401));
   }
 };

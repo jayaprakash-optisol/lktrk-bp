@@ -8,6 +8,7 @@
     "dev": "nodemon src/index.ts",
     "build": "tsc",
     "lint": "eslint . --ext .ts",
+    "lint:fix": "eslint . --ext .ts --fix",
     "format": "prettier --write \"src/**/*.ts\"",
     "test": "jest --detectOpenHandles",
     "test:watch": "jest --watch",
@@ -17,7 +18,6 @@
     "sonar": "ts-node sonar-scanner.ts",
     "migrate": "ts-node src/database/scripts/migrate.ts",
     "seed": "ts-node src/database/scripts/seed.ts",
-    "generate-types": "drizzle-kit generate:pg --out src/database/models",
     "db:generate": "drizzle-kit generate",
     "db:push": "drizzle-kit migrate",
     "db:drop": "drizzle-kit drop --config=./drizzle.config.ts"
@@ -39,6 +39,7 @@
     "pg": "^8.14.1",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.1",
+    "uuid": "^11.1.0",
     "winston": "^3.17.0",
     "zod": "^3.24.2"
   },
@@ -57,6 +58,7 @@
     "@types/supertest": "^6.0.3",
     "@types/swagger-jsdoc": "^6.0.4",
     "@types/swagger-ui-express": "^4.1.8",
+    "@types/uuid": "^10.0.0",
     "@typescript-eslint/eslint-plugin": "^8.29.1",
     "@typescript-eslint/parser": "^8.29.1",
     "better-sqlite3": "^11.9.1",
@@ -75,7 +77,8 @@
     "ts-jest": "^29.3.1",
     "ts-node": "^10.9.2",
     "ts-node-dev": "^2.0.0",
-    "typescript": "^5.8.3"
+    "typescript": "^5.8.3",
+    "typescript-eslint": "^8.29.1"
   },
   "overrides": {
     "esbuild": "^0.25.2"

@@ -19,9 +19,8 @@ import { stream } from './utils/logger';
 import swaggerUi from 'swagger-ui-express';
 import swaggerSpec from './docs/swagger';
 
-// Import routes
-import authRoutes from './routes/auth.routes';
-import userRoutes from './routes/user.routes';
+// Import combined routes
+import routes from './routes';
 
 class App {
   public app: Application;
@@ -73,9 +72,8 @@ class App {
     // Apply rate limiter to API routes only
     this.app.use(`${env.API_PREFIX}`, rateLimiter());
 
-    // API routes
-    this.app.use(`${env.API_PREFIX}/auth`, authRoutes);
-    this.app.use(`${env.API_PREFIX}/users`, userRoutes);
+    // Use all API routes from the combined router
+    this.app.use(`${env.API_PREFIX}`, routes);
 
     // Swagger documentation (no rate limiting)
     this.app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));

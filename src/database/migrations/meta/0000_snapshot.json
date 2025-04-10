@@ -1,5 +1,5 @@
 {
-  "id": "bdf77f79-47d8-49b4-a4fb-177d99b7c10a",
+  "id": "5fdda20f-48ec-4bfd-93e8-4005bf493de1",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -978,10 +978,9 @@
           "primaryKey": false,
           "notNull": true
         },
-        "regulation": {
-          "name": "regulation",
-          "type": "regulation_name",
-          "typeSchema": "public",
+        "regulation_id": {
+          "name": "regulation_id",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": true
         },
@@ -1033,6 +1032,19 @@
           "tableTo": "customer",
           "columnsFrom": [
             "customer_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "project_regulation_id_regulation_id_fk": {
+          "name": "project_regulation_id_regulation_id_fk",
+          "tableFrom": "project",
+          "tableTo": "regulation",
+          "columnsFrom": [
+            "regulation_id"
           ],
           "columnsTo": [
             "id"

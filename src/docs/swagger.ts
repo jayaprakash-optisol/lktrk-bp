@@ -41,7 +41,8 @@ const swaggerDefinition = {
         required: ['id', 'email', 'role', 'isActive', 'createdAt', 'updatedAt'],
         properties: {
           id: {
-            type: 'integer',
+            type: 'string',
+            format: 'uuid',
             description: 'User ID',
           },
           email: {
@@ -75,6 +76,282 @@ const swaggerDefinition = {
             type: 'string',
             format: 'date-time',
             description: 'User last update timestamp',
+          },
+        },
+      },
+      Equipment: {
+        type: 'object',
+        required: ['id', 'equipmentName', 'equipmentType', 'createdAt', 'updatedAt'],
+        properties: {
+          id: {
+            type: 'string',
+            format: 'uuid',
+            description: 'Equipment ID',
+          },
+          equipmentName: {
+            type: 'string',
+            description: 'Equipment name',
+          },
+          equipmentType: {
+            type: 'string',
+            enum: ['compressor', 'pump', 'valve', 'tank', 'vessel', 'pipeline'],
+            description: 'Type of equipment',
+          },
+          locationLatitude: {
+            type: 'number',
+            format: 'double',
+            description: 'Equipment location latitude',
+          },
+          locationLongitude: {
+            type: 'number',
+            format: 'double',
+            description: 'Equipment location longitude',
+          },
+          notes: {
+            type: 'string',
+            description: 'Additional notes about the equipment',
+          },
+          isDeleted: {
+            type: 'boolean',
+            description: 'Soft delete status',
+          },
+          createdAt: {
+            type: 'string',
+            format: 'date-time',
+            description: 'Creation timestamp',
+          },
+          updatedAt: {
+            type: 'string',
+            format: 'date-time',
+            description: 'Last update timestamp',
+          },
+        },
+      },
+      Component: {
+        type: 'object',
+        required: [
+          'id',
+          'componentSubType',
+          'monitoringFrequency',
+          'accessDifficulty',
+          'createdAt',
+          'updatedAt',
+        ],
+        properties: {
+          id: {
+            type: 'string',
+            format: 'uuid',
+            description: 'Component ID',
+          },
+          componentSubType: {
+            type: 'string',
+            enum: ['connector', 'flange', 'valve', 'relief', 'threaded', 'other'],
+            description: 'Subtype of component',
+          },
+          monitoringFrequency: {
+            type: 'string',
+            enum: ['daily', 'weekly', 'monthly', 'quarterly', 'biannual', 'annual'],
+            description: 'Frequency of monitoring',
+          },
+          accessDifficulty: {
+            type: 'string',
+            enum: ['easy', 'moderate', 'difficult', 'very_difficult'],
+            description: 'Difficulty level of accessing the component',
+          },
+          locationLatitude: {
+            type: 'number',
+            format: 'double',
+            description: 'Component location latitude',
+          },
+          locationLongitude: {
+            type: 'number',
+            format: 'double',
+            description: 'Component location longitude',
+          },
+          notes: {
+            type: 'string',
+            description: 'Additional notes about the component',
+          },
+          isDeleted: {
+            type: 'boolean',
+            description: 'Soft delete status',
+          },
+          createdAt: {
+            type: 'string',
+            format: 'date-time',
+            description: 'Creation timestamp',
+          },
+          updatedAt: {
+            type: 'string',
+            format: 'date-time',
+            description: 'Last update timestamp',
+          },
+        },
+      },
+      Survey: {
+        type: 'object',
+        required: [
+          'id',
+          'customerName',
+          'projectId',
+          'facilityId',
+          'zone',
+          'regulationId',
+          'monitoringFrequency',
+          'surveyType',
+          'priority',
+          'surveyMethod',
+          'technology',
+          'primaryTechnicianId',
+          'date',
+          'createdAt',
+          'updatedAt',
+        ],
+        properties: {
+          id: {
+            type: 'string',
+            format: 'uuid',
+            description: 'Survey ID',
+          },
+          customerName: {
+            type: 'string',
+            description: 'Customer name',
+          },
+          projectId: {
+            type: 'string',
+            format: 'uuid',
+            description: 'Associated project ID',
+          },
+          facilityId: {
+            type: 'string',
+            format: 'uuid',
+            description: 'Associated facility ID',
+          },
+          zone: {
+            type: 'string',
+            enum: ['north', 'south', 'east', 'west', 'central'],
+            description: 'Facility zone surveyed',
+          },
+          regulationId: {
+            type: 'string',
+            format: 'uuid',
+            description: 'Associated regulation ID',
+          },
+          monitoringFrequency: {
+            type: 'string',
+            enum: ['daily', 'weekly', 'monthly', 'quarterly', 'biannual', 'annual'],
+            description: 'Frequency of monitoring',
+          },
+          surveyType: {
+            type: 'string',
+            enum: ['routine', 'follow_up', 'emergency', 'baseline'],
+            description: 'Type of survey',
+          },
+          priority: {
+            type: 'string',
+            enum: ['low', 'medium', 'high', 'critical'],
+            description: 'Priority level of the survey',
+          },
+          surveyMethod: {
+            type: 'string',
+            enum: ['visual', 'optical_gas_imaging', 'measurement', 'other'],
+            description: 'Method used for the survey',
+          },
+          technology: {
+            type: 'string',
+            enum: ['flir_camera', 'tvs2000', 'sniffdog', 'prototype'],
+            description: 'Technology used for the survey',
+          },
+          primaryTechnicianId: {
+            type: 'string',
+            format: 'uuid',
+            description: 'ID of the primary technician',
+          },
+          date: {
+            type: 'string',
+            format: 'date-time',
+            description: 'Date of the survey',
+          },
+          notes: {
+            type: 'string',
+            description: 'Additional notes about the survey',
+          },
+          isDeleted: {
+            type: 'boolean',
+            description: 'Soft delete status',
+          },
+          createdAt: {
+            type: 'string',
+            format: 'date-time',
+            description: 'Creation timestamp',
+          },
+          updatedAt: {
+            type: 'string',
+            format: 'date-time',
+            description: 'Last update timestamp',
+          },
+        },
+      },
+      Pending: {
+        type: 'object',
+        required: ['id', 'title', 'status', 'dueDate', 'assignedToId', 'createdAt', 'updatedAt'],
+        properties: {
+          id: {
+            type: 'string',
+            format: 'uuid',
+            description: 'Pending item ID',
+          },
+          title: {
+            type: 'string',
+            description: 'Title of the pending item',
+          },
+          description: {
+            type: 'string',
+            description: 'Detailed description of the pending item',
+          },
+          status: {
+            type: 'string',
+            enum: ['new', 'in_progress', 'blocked', 'completed'],
+            description: 'Current status of the pending item',
+          },
+          priority: {
+            type: 'string',
+            enum: ['low', 'medium', 'high', 'critical'],
+            description: 'Priority level of the pending item',
+          },
+          dueDate: {
+            type: 'string',
+            format: 'date-time',
+            description: 'Due date for the pending item',
+          },
+          assignedToId: {
+            type: 'string',
+            format: 'uuid',
+            description: 'ID of the user assigned to this pending item',
+          },
+          relatedItemId: {
+            type: 'string',
+            format: 'uuid',
+            description: 'ID of the related item (equipment, component, or survey)',
+          },
+          relatedItemType: {
+            type: 'string',
+            enum: ['equipment', 'component', 'survey'],
+            description: 'Type of the related item',
+          },
+          isDeleted: {
+            type: 'boolean',
+            description: 'Soft delete status',
+          },
+          createdAt: {
+            type: 'string',
+            format: 'date-time',
+            description: 'Creation timestamp',
+          },
+          updatedAt: {
+            type: 'string',
+            format: 'date-time',
+            description: 'Last update timestamp',
           },
         },
       },
@@ -175,6 +452,22 @@ const swaggerDefinition = {
     {
       name: 'Users',
       description: 'User management endpoints',
+    },
+    {
+      name: 'Equipment',
+      description: 'Equipment management endpoints',
+    },
+    {
+      name: 'Components',
+      description: 'Component management endpoints',
+    },
+    {
+      name: 'Surveys',
+      description: 'Survey management endpoints',
+    },
+    {
+      name: 'Pending',
+      description: 'Pending items management endpoints',
     },
   ],
 };

@@ -1,34 +1,27 @@
 import { Request, Response, NextFunction } from 'express';
 import { AuthRequest } from '../types';
-import { IAuthService } from '../types/interfaces';
 import { sendSuccess, sendError } from '../utils/response.util';
-import { AuthService } from '../services/auth.service';
+import { authService } from '../services';
 
 export class AuthController {
-  private readonly authService: IAuthService;
-
-  constructor() {
-    this.authService = AuthService.getInstance();
-  }
-
   /**
    * Register a new user
    */
   register = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const { email, password, firstName, lastName, role } = req.body;
+      const { email, password, firstName, lastName, roleId } = req.body;
 
       // Validate required fields
       if (!email || !password) {
         return sendError(res, 'Email and password are required');
       }
 
-      const result = await this.authService.register({
+      const result = await authService.register({
         email,
         password,
         firstName,
         lastName,
-        role,
+        roleId,
       });
 
       if (!result.success) {
@@ -53,7 +46,7 @@ export class AuthController {
         return sendError(res, 'Email and password are required');
       }
 
-      const result = await this.authService.login(email, password);
+      const result = await authService.login(email, password);
 
       if (!result.success) {
         return sendError(res, result.error ?? 'Login failed', 401);
@@ -93,7 +86,7 @@ export class AuthController {
         return sendError(res, 'User not authenticated');
       }
 
-      const result = await this.authService.refreshToken(Number(req.user?.id));
+      const result = await authService.refreshToken(req.user.id.toString());
 
       if (!result.success) {
         return sendError(res, result.error ?? 'Token refresh failed');

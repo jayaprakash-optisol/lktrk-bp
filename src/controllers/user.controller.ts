@@ -1,13 +1,13 @@
 import { Request, Response, NextFunction } from 'express';
-import { IUserService } from '../types/interfaces';
+import { IUserService } from '../types';
 import { sendSuccess, sendError } from '../utils/response.util';
-import { UserService } from '../services/user.service';
+import { userService } from '../services';
 
 export class UserController {
   private readonly userService: IUserService;
 
   constructor() {
-    this.userService = UserService.getInstance();
+    this.userService = userService;
   }
 
   /**
@@ -39,9 +39,9 @@ export class UserController {
    */
   getUserById = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const userId = parseInt(req.params.id, 10);
+      const userId = req.params.id;
 
-      if (isNaN(userId)) {
+      if (!userId) {
         return sendError(res, 'Invalid user ID');
       }
 
@@ -62,7 +62,7 @@ export class UserController {
    */
   createUser = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const { email, password, firstName, lastName, role } = req.body;
+      const { email, password, firstName, lastName, roleId } = req.body;
 
       // Validate required fields
       if (!email || !password) {
@@ -74,7 +74,7 @@ export class UserController {
         password,
         firstName,
         lastName,
-        role,
+        roleId,
       });
 
       if (!result.success) {
@@ -92,20 +92,19 @@ export class UserController {
    */
   updateUser = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const userId = parseInt(req.params.id, 10);
+      const userId = req.params.id;
 
-      if (isNaN(userId)) {
+      if (!userId) {
         return sendError(res, 'Invalid user ID');
       }
 
-      const { firstName, lastName, password, role, isActive } = req.body;
+      const { firstName, lastName, password, roleId } = req.body;
 
       const result = await this.userService.updateUser(userId, {
         firstName,
         lastName,
         password,
-        role,
-        isActive,
+        roleId,
       });
 
       if (!result.success) {
@@ -123,9 +122,9 @@ export class UserController {
    */
   deleteUser = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const userId = parseInt(req.params.id, 10);
+      const userId = req.params.id;
 
-      if (isNaN(userId)) {
+      if (!userId) {
         return sendError(res, 'Invalid user ID');
       }
 

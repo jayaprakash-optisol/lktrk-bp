@@ -1,8 +1,7 @@
 import jwt, { SignOptions } from 'jsonwebtoken';
-import { JwtPayload, ServiceResponse } from '../types';
+import { JwtPayload, ServiceResponse, IJwtUtil } from '../types';
 import env from '../config/env.config';
 import { logger } from './logger';
-import { IJwtUtil } from '../types/interfaces';
 import { createServiceResponse } from './response.util';
 import { StatusCodes } from 'http-status-codes';
 
@@ -49,10 +48,10 @@ export class JwtUtil implements IJwtUtil {
       logger.error('Error verifying JWT token:', error);
 
       // Empty JwtPayload object for error case
-      const emptyPayload: JwtPayload = { userId: 0, email: '', role: '' };
+      const emptyPayload: JwtPayload = { userId: '', email: '', role: '' };
 
       // Handle specific token errors
-      if ((error as any)?.name === 'TokenExpiredError') {
+      if (error instanceof Error && 'name' in error && error.name === 'TokenExpiredError') {
         return createServiceResponse(
           false,
           emptyPayload,

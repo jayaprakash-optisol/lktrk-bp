@@ -168,7 +168,7 @@ CREATE TABLE "project" (
 	"deleted_at" timestamp,
 	"project_name" varchar NOT NULL,
 	"customer_id" uuid NOT NULL,
-	"regulation" "regulation_name" NOT NULL,
+	"regulation_id" uuid NOT NULL,
 	"monitoring_frequency" "monitoring_frequency_name" NOT NULL,
 	"technology" "technology_name" NOT NULL,
 	"survey_method" "survey_method_name" NOT NULL,
@@ -267,6 +267,7 @@ ALTER TABLE "facility" ADD CONSTRAINT "facility_customer_id_customer_id_fk" FORE
 ALTER TABLE "role_module_access" ADD CONSTRAINT "role_module_access_role_id_role_id_fk" FOREIGN KEY ("role_id") REFERENCES "public"."role"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "user" ADD CONSTRAINT "user_role_id_role_id_fk" FOREIGN KEY ("role_id") REFERENCES "public"."role"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "project" ADD CONSTRAINT "project_customer_id_customer_id_fk" FOREIGN KEY ("customer_id") REFERENCES "public"."customer"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "project" ADD CONSTRAINT "project_regulation_id_regulation_id_fk" FOREIGN KEY ("regulation_id") REFERENCES "public"."regulation"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "project_component" ADD CONSTRAINT "project_component_project_id_project_id_fk" FOREIGN KEY ("project_id") REFERENCES "public"."project"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "project_component" ADD CONSTRAINT "project_component_component_id_component_id_fk" FOREIGN KEY ("component_id") REFERENCES "public"."component"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "project_equipment" ADD CONSTRAINT "project_equipment_project_id_project_id_fk" FOREIGN KEY ("project_id") REFERENCES "public"."project"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint

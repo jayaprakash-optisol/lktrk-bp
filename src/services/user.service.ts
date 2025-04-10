@@ -1,32 +1,21 @@
 import bcrypt from 'bcrypt';
 import { eq, getTableColumns } from 'drizzle-orm';
 import { db } from '../config/database.config';
-import { users } from '../models';
+import { user } from '../models';
 import { NewUser, User, ServiceResponse, PaginationParams, PaginatedResult } from '../types';
-import { IUserService } from '../types/interfaces';
+import { IUserService } from '../types/interfaces/user.interface';
 import env from '../config/env.config';
 import { StatusCodes } from 'http-status-codes';
 import { createServiceResponse, createNotFoundError } from '../utils/response.util';
+import crypto from 'crypto';
+import { Singleton } from '../utils/service.util';
 
 interface ErrorWithStatusCode extends Error {
   statusCode: number;
 }
 
+@Singleton
 export class UserService implements IUserService {
-  private static instance: UserService;
-
-  private constructor() {}
-
-  /**
-   * Get singleton instance
-   */
-  public static getInstance(): UserService {
-    if (!UserService.instance) {
-      UserService.instance = new UserService();
-    }
-    return UserService.instance;
-  }
-
   /**
    * Create a new user
    */
@@ -42,10 +31,14 @@ export class UserService implements IUserService {
 
       // Insert user into database with hashed password
       const result = await db
-        .insert(users)
+        .insert(user)
         .values({
           ...userData,
           password: hashedPassword,
+          id: crypto.randomUUID(),
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          isDeleted: false,
         })
         .returning();
 
@@ -67,9 +60,9 @@ export class UserService implements IUserService {
   /**
    * Get user by ID
    */
-  async getUserById(userId: number): Promise<ServiceResponse<User>> {
+  async getUserById(userId: string): Promise<ServiceResponse<User>> {
     try {
-      const result = await db.select().from(users).where(eq(users.id, userId)).limit(1);
+      const result = await db.select().from(user).where(eq(user.id, userId)).limit(1);
 
       if (!result.length) {
         throw createNotFoundError(`User with ID ${userId} not found`);
@@ -91,7 +84,7 @@ export class UserService implements IUserService {
    */
   async getUserByEmail(email: string): Promise<ServiceResponse<User>> {
     try {
-      const result = await db.select().from(users).where(eq(users.email, email)).limit(1);
+      const result = await db.select().from(user).where(eq(user.email, email)).limit(1);
 
       if (!result.length) {
         throw createNotFoundError(`User with email ${email} not found`);
@@ -119,12 +112,12 @@ export class UserService implements IUserService {
       const offset = (page - 1) * limit;
 
       // Get total count
-      const countResult = await db.select({ count: users.id }).from(users);
+      const countResult = await db.select({ count: user.id }).from(user);
       const total = countResult.length;
 
       // Get users with pagination
-      const { password: _password, ...rest } = getTableColumns(users);
-      const result = await db.select(rest).from(users).limit(limit).offset(offset);
+      const { password: _password, ...rest } = getTableColumns(user);
+      const result = await db.select(rest).from(user).limit(limit).offset(offset);
 
       // Calculate pagination metadata
       const totalPages = Math.ceil(total / limit);
@@ -152,12 +145,12 @@ export class UserService implements IUserService {
    * Update user
    */
   async updateUser(
-    userId: number,
+    userId: string,
     userData: Partial<Omit<User, 'id' | 'email' | 'createdAt' | 'updatedAt'>>,
   ): Promise<ServiceResponse<User>> {
     try {
       // Check if user exists
-      const existingUser = await db.select().from(users).where(eq(users.id, userId)).limit(1);
+      const existingUser = await db.select().from(user).where(eq(user.id, userId)).limit(1);
 
       if (!existingUser.length) {
         throw createNotFoundError(`User with ID ${userId} not found`);
@@ -175,9 +168,9 @@ export class UserService implements IUserService {
 
       // Update user
       const result = await db
-        .update(users)
+        .update(user)
         .set({ ...dataToUpdate, updatedAt: new Date() })
-        .where(eq(users.id, userId))
+        .where(eq(user.id, userId))
         .returning();
 
       return createServiceResponse(true, result[0]);
@@ -194,17 +187,17 @@ export class UserService implements IUserService {
   /**
    * Delete user
    */
-  async deleteUser(userId: number): Promise<ServiceResponse<void>> {
+  async deleteUser(userId: string): Promise<ServiceResponse<void>> {
     try {
       // Check if user exists
-      const existingUser = await db.select().from(users).where(eq(users.id, userId)).limit(1);
+      const existingUser = await db.select().from(user).where(eq(user.id, userId)).limit(1);
 
       if (!existingUser.length) {
         throw createNotFoundError(`User with ID ${userId} not found`);
       }
 
       // Delete user
-      await db.delete(users).where(eq(users.id, userId));
+      await db.delete(user).where(eq(user.id, userId));
 
       return createServiceResponse<void>(true, undefined, undefined, StatusCodes.NO_CONTENT);
     } catch (error) {

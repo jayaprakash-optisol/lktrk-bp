@@ -1,0 +1,1183 @@
+paths:
+  /facilities:
+    get:
+      tags:
+        - Facilities
+      summary: Get all facilities
+      description: Retrieve a paginated list of all facilities
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+          description: Page number
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            minimum: 1
+            default: 10
+          description: Number of items per page
+      responses:
+        '200':
+          description: List of facilities successfully retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      items:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Facility'
+                      total:
+                        type: integer
+                        example: 32
+                      page:
+                        type: integer
+                        example: 1
+                      limit:
+                        type: integer
+                        example: 10
+                      totalPages:
+                        type: integer
+                        example: 4
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+    post:
+      tags:
+        - Facilities
+      summary: Create new facility
+      description: Create a new facility record
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - facilityName
+                - customerId
+              properties:
+                facilityName:
+                  type: string
+                  example: 'Houston Processing Plant'
+                facilityCode:
+                  type: string
+                  example: 'HPP-001'
+                customerId:
+                  type: string
+                  format: uuid
+                  example: '123e4567-e89b-12d3-a456-426614174000'
+                type:
+                  type: string
+                  enum: ['Production', 'Processing', 'Storage', 'Distribution', 'Other']
+                  example: 'Processing'
+                status:
+                  type: string
+                  enum: ['Active', 'Inactive', 'Maintenance', 'Construction']
+                  example: 'Active'
+                description:
+                  type: string
+                  example: 'Primary petrochemical processing facility for Gulf region operations'
+                location:
+                  type: object
+                  properties:
+                    address:
+                      type: string
+                      example: '4500 Industrial Boulevard'
+                    city:
+                      type: string
+                      example: 'Houston'
+                    state:
+                      type: string
+                      example: 'TX'
+                    zipCode:
+                      type: string
+                      example: '77015'
+                    country:
+                      type: string
+                      example: 'USA'
+                    coordinates:
+                      type: object
+                      properties:
+                        latitude:
+                          type: number
+                          format: float
+                          example: 29.7795
+                        longitude:
+                          type: number
+                          format: float
+                          example: -95.1631
+                siteInfo:
+                  type: object
+                  properties:
+                    siteSize:
+                      type: number
+                      format: float
+                      example: 120.5
+                    sizeUnit:
+                      type: string
+                      example: 'acres'
+                    yearBuilt:
+                      type: integer
+                      example: 1998
+                    lastRenovated:
+                      type: integer
+                      example: 2015
+                    operatingHours:
+                      type: string
+                      example: '24/7'
+                    employees:
+                      type: integer
+                      example: 350
+                contactInfo:
+                  type: object
+                  properties:
+                    facilityManager:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                          example: 'Robert Johnson'
+                        title:
+                          type: string
+                          example: 'Plant Manager'
+                        email:
+                          type: string
+                          format: email
+                          example: 'r.johnson@example.com'
+                        phone:
+                          type: string
+                          example: '+1 (555) 123-7890'
+                    environmentalContact:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                          example: 'Emily Chen'
+                        title:
+                          type: string
+                          example: 'Environmental Compliance Specialist'
+                        email:
+                          type: string
+                          format: email
+                          example: 'e.chen@example.com'
+                        phone:
+                          type: string
+                          example: '+1 (555) 987-6543'
+                    securityContact:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                          example: 'David Martinez'
+                        phone:
+                          type: string
+                          example: '+1 (555) 456-7890'
+                        email:
+                          type: string
+                          format: email
+                          example: 'd.martinez@example.com'
+                regulatoryInfo:
+                  type: object
+                  properties:
+                    permitNumbers:
+                      type: array
+                      items:
+                        type: string
+                      example: ['EPA-TX-12345', 'TCEQ-9876543', 'DOT-HAZ-87654']
+                    complianceStatus:
+                      type: string
+                      enum: ['Compliant', 'NonCompliant', 'UnderReview', 'Exempted']
+                      example: 'Compliant'
+                    lastInspectionDate:
+                      type: string
+                      format: date
+                      example: '2023-05-18'
+                    nextInspectionDue:
+                      type: string
+                      format: date
+                      example: '2024-05-18'
+                    regulatoryBody:
+                      type: array
+                      items:
+                        type: string
+                      example: ['EPA', 'TCEQ', 'OSHA']
+                operations:
+                  type: object
+                  properties:
+                    processes:
+                      type: array
+                      items:
+                        type: string
+                      example: ['Distillation', 'Cracking', 'Alkylation', 'Reforming']
+                    mainProducts:
+                      type: array
+                      items:
+                        type: string
+                      example: ['Gasoline', 'Diesel', 'Jet Fuel', 'Propylene']
+                    capacity:
+                      type: object
+                      properties:
+                        value:
+                          type: number
+                          format: float
+                          example: 250000
+                        unit:
+                          type: string
+                          example: 'barrels per day'
+                    storageCapacity:
+                      type: object
+                      properties:
+                        value:
+                          type: number
+                          format: float
+                          example: 2000000
+                        unit:
+                          type: string
+                          example: 'barrels'
+                safety:
+                  type: object
+                  properties:
+                    safetyRating:
+                      type: string
+                      enum: ['Excellent', 'Good', 'Fair', 'Poor']
+                      example: 'Good'
+                    incidentRate:
+                      type: number
+                      format: float
+                      example: 0.7
+                    lastIncidentDate:
+                      type: string
+                      format: date
+                      example: '2022-11-03'
+                    safetyMeasures:
+                      type: array
+                      items:
+                        type: string
+                      example:
+                        [
+                          'Process Safety Management',
+                          'Regular Drills',
+                          'Safety Training',
+                          'Emergency Response Plan',
+                        ]
+                notes:
+                  type: string
+                  example: 'Facility scheduled for equipment upgrades in Q3 2024. LDAR monitoring frequency may increase due to recent regulatory changes.'
+                tags:
+                  type: array
+                  items:
+                    type: string
+                  example: ['LDAR', 'Chemical', 'High Priority', 'Gulf Coast']
+      responses:
+        '201':
+          description: Facility created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: 'Facility created successfully'
+                  data:
+                    $ref: '#/components/schemas/Facility'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /facilities/{id}:
+    get:
+      tags:
+        - Facilities
+      summary: Get facility by ID
+      description: Retrieve a specific facility by its ID
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Facility unique identifier
+      responses:
+        '200':
+          description: Facility successfully retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    $ref: '#/components/schemas/Facility'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+    put:
+      tags:
+        - Facilities
+      summary: Update facility
+      description: Update an existing facility record
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Facility unique identifier
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                facilityName:
+                  type: string
+                  example: 'Houston Processing Plant - East Campus'
+                facilityCode:
+                  type: string
+                  example: 'HPP-001-EAST'
+                customerId:
+                  type: string
+                  format: uuid
+                  example: '123e4567-e89b-12d3-a456-426614174000'
+                type:
+                  type: string
+                  enum: ['Production', 'Processing', 'Storage', 'Distribution', 'Other']
+                  example: 'Processing'
+                status:
+                  type: string
+                  enum: ['Active', 'Inactive', 'Maintenance', 'Construction']
+                  example: 'Active'
+                description:
+                  type: string
+                  example: 'Primary petrochemical processing facility for Gulf region operations with recent east campus expansion'
+                location:
+                  type: object
+                  properties:
+                    address:
+                      type: string
+                      example: '4500 Industrial Boulevard'
+                    city:
+                      type: string
+                      example: 'Houston'
+                    state:
+                      type: string
+                      example: 'TX'
+                    zipCode:
+                      type: string
+                      example: '77015'
+                    country:
+                      type: string
+                      example: 'USA'
+                    coordinates:
+                      type: object
+                      properties:
+                        latitude:
+                          type: number
+                          format: float
+                          example: 29.7795
+                        longitude:
+                          type: number
+                          format: float
+                          example: -95.1631
+                siteInfo:
+                  type: object
+                  properties:
+                    siteSize:
+                      type: number
+                      format: float
+                      example: 145.2
+                    sizeUnit:
+                      type: string
+                      example: 'acres'
+                    yearBuilt:
+                      type: integer
+                      example: 1998
+                    lastRenovated:
+                      type: integer
+                      example: 2022
+                    operatingHours:
+                      type: string
+                      example: '24/7'
+                    employees:
+                      type: integer
+                      example: 425
+                contactInfo:
+                  type: object
+                  properties:
+                    facilityManager:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                          example: 'Robert Johnson'
+                        title:
+                          type: string
+                          example: 'Plant Manager'
+                        email:
+                          type: string
+                          format: email
+                          example: 'r.johnson@example.com'
+                        phone:
+                          type: string
+                          example: '+1 (555) 123-7890'
+                    environmentalContact:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                          example: 'Emily Chen'
+                        title:
+                          type: string
+                          example: 'Senior Environmental Compliance Specialist'
+                        email:
+                          type: string
+                          format: email
+                          example: 'e.chen@example.com'
+                        phone:
+                          type: string
+                          example: '+1 (555) 987-6543'
+                    securityContact:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                          example: 'David Martinez'
+                        phone:
+                          type: string
+                          example: '+1 (555) 456-7890'
+                        email:
+                          type: string
+                          format: email
+                          example: 'd.martinez@example.com'
+                regulatoryInfo:
+                  type: object
+                  properties:
+                    permitNumbers:
+                      type: array
+                      items:
+                        type: string
+                      example: ['EPA-TX-12345', 'TCEQ-9876543', 'DOT-HAZ-87654', 'TCEQ-EAST-12345']
+                    complianceStatus:
+                      type: string
+                      enum: ['Compliant', 'NonCompliant', 'UnderReview', 'Exempted']
+                      example: 'Compliant'
+                    lastInspectionDate:
+                      type: string
+                      format: date
+                      example: '2023-11-30'
+                    nextInspectionDue:
+                      type: string
+                      format: date
+                      example: '2024-11-30'
+                    regulatoryBody:
+                      type: array
+                      items:
+                        type: string
+                      example: ['EPA', 'TCEQ', 'OSHA']
+                operations:
+                  type: object
+                  properties:
+                    processes:
+                      type: array
+                      items:
+                        type: string
+                      example:
+                        ['Distillation', 'Cracking', 'Alkylation', 'Reforming', 'Isomerization']
+                    mainProducts:
+                      type: array
+                      items:
+                        type: string
+                      example: ['Gasoline', 'Diesel', 'Jet Fuel', 'Propylene', 'Lubricants']
+                    capacity:
+                      type: object
+                      properties:
+                        value:
+                          type: number
+                          format: float
+                          example: 310000
+                        unit:
+                          type: string
+                          example: 'barrels per day'
+                    storageCapacity:
+                      type: object
+                      properties:
+                        value:
+                          type: number
+                          format: float
+                          example: 2500000
+                        unit:
+                          type: string
+                          example: 'barrels'
+                safety:
+                  type: object
+                  properties:
+                    safetyRating:
+                      type: string
+                      enum: ['Excellent', 'Good', 'Fair', 'Poor']
+                      example: 'Excellent'
+                    incidentRate:
+                      type: number
+                      format: float
+                      example: 0.5
+                    lastIncidentDate:
+                      type: string
+                      format: date
+                      example: '2022-11-03'
+                    safetyMeasures:
+                      type: array
+                      items:
+                        type: string
+                      example:
+                        [
+                          'Process Safety Management',
+                          'Regular Drills',
+                          'Safety Training',
+                          'Emergency Response Plan',
+                          'Advanced Monitoring Systems',
+                        ]
+                notes:
+                  type: string
+                  example: 'East campus expansion completed in 2022. Facility now includes advanced catalyst laboratory and expanded storage capabilities. LDAR program enhanced with continuous monitoring in high-risk areas.'
+                tags:
+                  type: array
+                  items:
+                    type: string
+                  example: ['LDAR', 'Chemical', 'High Priority', 'Gulf Coast', 'Modernized']
+      responses:
+        '200':
+          description: Facility updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: 'Facility updated successfully'
+                  data:
+                    $ref: '#/components/schemas/Facility'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+    delete:
+      tags:
+        - Facilities
+      summary: Delete facility
+      description: Soft delete a facility record
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Facility unique identifier
+      responses:
+        '200':
+          description: Facility deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: 'Facility deleted successfully'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /facilities/customer/{customerId}:
+    get:
+      tags:
+        - Facilities
+      summary: Get facilities by customer
+      description: Retrieve all facilities associated with a specific customer
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: customerId
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Customer unique identifier
+        - in: query
+          name: page
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+          description: Page number
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            minimum: 1
+            default: 10
+          description: Number of items per page
+      responses:
+        '200':
+          description: Facilities successfully retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      items:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Facility'
+                      total:
+                        type: integer
+                        example: 8
+                      page:
+                        type: integer
+                        example: 1
+                      limit:
+                        type: integer
+                        example: 10
+                      totalPages:
+                        type: integer
+                        example: 1
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /facilities/search:
+    get:
+      tags:
+        - Facilities
+      summary: Search facilities
+      description: Search for facilities by name, code, or description
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: query
+          schema:
+            type: string
+          description: Search term to match against facility name, code, or description
+          required: true
+        - in: query
+          name: page
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+          description: Page number
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            minimum: 1
+            default: 10
+          description: Number of items per page
+      responses:
+        '200':
+          description: Search results successfully retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      items:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Facility'
+                      total:
+                        type: integer
+                        example: 7
+                      page:
+                        type: integer
+                        example: 1
+                      limit:
+                        type: integer
+                        example: 10
+                      totalPages:
+                        type: integer
+                        example: 1
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /facilities/status/{status}:
+    get:
+      tags:
+        - Facilities
+      summary: Get facilities by status
+      description: Retrieve all facilities with a specific status
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: status
+          required: true
+          schema:
+            type: string
+            enum: ['Active', 'Inactive', 'Maintenance', 'Construction']
+          description: Facility status to filter by
+        - in: query
+          name: page
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+          description: Page number
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            minimum: 1
+            default: 10
+          description: Number of items per page
+      responses:
+        '200':
+          description: Facilities successfully retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      items:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Facility'
+                      total:
+                        type: integer
+                        example: 23
+                      page:
+                        type: integer
+                        example: 1
+                      limit:
+                        type: integer
+                        example: 10
+                      totalPages:
+                        type: integer
+                        example: 3
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /facilities/type/{type}:
+    get:
+      tags:
+        - Facilities
+      summary: Get facilities by type
+      description: Retrieve all facilities of a specific type
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: type
+          required: true
+          schema:
+            type: string
+            enum: ['Production', 'Processing', 'Storage', 'Distribution', 'Other']
+          description: Facility type to filter by
+        - in: query
+          name: page
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+          description: Page number
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            minimum: 1
+            default: 10
+          description: Number of items per page
+      responses:
+        '200':
+          description: Facilities successfully retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      items:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Facility'
+                      total:
+                        type: integer
+                        example: 14
+                      page:
+                        type: integer
+                        example: 1
+                      limit:
+                        type: integer
+                        example: 10
+                      totalPages:
+                        type: integer
+                        example: 2
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /facilities/{id}/equipment:
+    get:
+      tags:
+        - Facilities
+      summary: Get facility equipment
+      description: Retrieve all equipment associated with a specific facility
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Facility unique identifier
+        - in: query
+          name: page
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+          description: Page number
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            minimum: 1
+            default: 10
+          description: Number of items per page
+      responses:
+        '200':
+          description: Equipment successfully retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      items:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Equipment'
+                      total:
+                        type: integer
+                        example: 125
+                      page:
+                        type: integer
+                        example: 1
+                      limit:
+                        type: integer
+                        example: 10
+                      totalPages:
+                        type: integer
+                        example: 13
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /facilities/{id}/components:
+    get:
+      tags:
+        - Facilities
+      summary: Get facility components
+      description: Retrieve all components associated with a specific facility
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Facility unique identifier
+        - in: query
+          name: page
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+          description: Page number
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            minimum: 1
+            default: 10
+          description: Number of items per page
+      responses:
+        '200':
+          description: Components successfully retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      items:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Component'
+                      total:
+                        type: integer
+                        example: 1250
+                      page:
+                        type: integer
+                        example: 1
+                      limit:
+                        type: integer
+                        example: 10
+                      totalPages:
+                        type: integer
+                        example: 125
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /facilities/{id}/projects:
+    get:
+      tags:
+        - Facilities
+      summary: Get facility projects
+      description: Retrieve all projects associated with a specific facility
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Facility unique identifier
+        - in: query
+          name: page
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+          description: Page number
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            minimum: 1
+            default: 10
+          description: Number of items per page
+      responses:
+        '200':
+          description: Projects successfully retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      items:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Project'
+                      total:
+                        type: integer
+                        example: 12
+                      page:
+                        type: integer
+                        example: 1
+                      limit:
+                        type: integer
+                        example: 10
+                      totalPages:
+                        type: integer
+                        example: 2
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /facilities/{id}/surveys:
+    get:
+      tags:
+        - Facilities
+      summary: Get facility surveys
+      description: Retrieve all surveys associated with a specific facility
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Facility unique identifier
+        - in: query
+          name: page
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+          description: Page number
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            minimum: 1
+            default: 10
+          description: Number of items per page
+      responses:
+        '200':
+          description: Surveys successfully retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      items:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Survey'
+                      total:
+                        type: integer
+                        example: 45
+                      page:
+                        type: integer
+                        example: 1
+                      limit:
+                        type: integer
+                        example: 10
+                      totalPages:
+                        type: integer
+                        example: 5
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '500':
+          $ref: '#/components/responses/ServerError'

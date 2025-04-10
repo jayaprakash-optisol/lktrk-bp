@@ -1,0 +1,466 @@
+paths:
+  /surveys:
+    get:
+      tags:
+        - Surveys
+      summary: Get all surveys
+      description: Retrieve a paginated list of all surveys
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+          description: Page number
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            minimum: 1
+            default: 10
+          description: Number of items per page
+      responses:
+        '200':
+          description: List of surveys successfully retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      items:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Survey'
+                      total:
+                        type: integer
+                        example: 50
+                      page:
+                        type: integer
+                        example: 1
+                      limit:
+                        type: integer
+                        example: 10
+                      totalPages:
+                        type: integer
+                        example: 5
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+    post:
+      tags:
+        - Surveys
+      summary: Create new survey
+      description: Create a new survey record
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - customerName
+                - projectId
+                - facilityId
+                - zone
+                - regulationId
+                - monitoringFrequency
+                - surveyType
+                - priority
+                - surveyMethod
+                - technology
+                - primaryTechnicianId
+                - date
+              properties:
+                customerName:
+                  type: string
+                  example: 'ACME Corporation'
+                projectId:
+                  type: string
+                  format: uuid
+                  example: '3fa85f64-5717-4562-b3fc-2c963f66afa6'
+                facilityId:
+                  type: string
+                  format: uuid
+                  example: '3fa85f64-5717-4562-b3fc-2c963f66afa7'
+                zone:
+                  type: string
+                  enum: [north, south, east, west, central]
+                  example: 'north'
+                regulationId:
+                  type: string
+                  format: uuid
+                  example: '3fa85f64-5717-4562-b3fc-2c963f66afa8'
+                monitoringFrequency:
+                  type: string
+                  enum: [daily, weekly, monthly, quarterly, biannual, annual]
+                  example: 'quarterly'
+                surveyType:
+                  type: string
+                  enum: [routine, follow_up, emergency, baseline]
+                  example: 'routine'
+                priority:
+                  type: string
+                  enum: [low, medium, high, critical]
+                  example: 'medium'
+                surveyMethod:
+                  type: string
+                  enum: [visual, optical_gas_imaging, measurement, other]
+                  example: 'optical_gas_imaging'
+                technology:
+                  type: string
+                  enum: [flir_camera, tvs2000, sniffdog, prototype]
+                  example: 'flir_camera'
+                primaryTechnicianId:
+                  type: string
+                  format: uuid
+                  example: '3fa85f64-5717-4562-b3fc-2c963f66afa9'
+                date:
+                  type: string
+                  format: date-time
+                  example: '2023-01-15T14:30:00Z'
+                notes:
+                  type: string
+                  example: 'Regular quarterly monitoring'
+      responses:
+        '201':
+          description: Survey created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: 'Survey created successfully'
+                  data:
+                    $ref: '#/components/schemas/Survey'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /surveys/facility/{facilityId}:
+    get:
+      tags:
+        - Surveys
+      summary: Get surveys by facility ID
+      description: Retrieve surveys for a specific facility
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: facilityId
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Facility unique identifier
+        - in: query
+          name: page
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+          description: Page number
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            minimum: 1
+            default: 10
+          description: Number of items per page
+      responses:
+        '200':
+          description: List of surveys for facility successfully retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      items:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Survey'
+                      total:
+                        type: integer
+                        example: 15
+                      page:
+                        type: integer
+                        example: 1
+                      limit:
+                        type: integer
+                        example: 10
+                      totalPages:
+                        type: integer
+                        example: 2
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /surveys/project/{projectId}:
+    get:
+      tags:
+        - Surveys
+      summary: Get surveys by project ID
+      description: Retrieve surveys for a specific project
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: projectId
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Project unique identifier
+        - in: query
+          name: page
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+          description: Page number
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            minimum: 1
+            default: 10
+          description: Number of items per page
+      responses:
+        '200':
+          description: List of surveys for project successfully retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      items:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Survey'
+                      total:
+                        type: integer
+                        example: 25
+                      page:
+                        type: integer
+                        example: 1
+                      limit:
+                        type: integer
+                        example: 10
+                      totalPages:
+                        type: integer
+                        example: 3
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /surveys/{id}:
+    get:
+      tags:
+        - Surveys
+      summary: Get survey by ID
+      description: Retrieve a specific survey by its ID
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Survey unique identifier
+      responses:
+        '200':
+          description: Survey successfully retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    $ref: '#/components/schemas/Survey'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+    put:
+      tags:
+        - Surveys
+      summary: Update survey
+      description: Update an existing survey record
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Survey unique identifier
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                customerName:
+                  type: string
+                  example: 'Updated ACME Corporation'
+                projectId:
+                  type: string
+                  format: uuid
+                  example: '3fa85f64-5717-4562-b3fc-2c963f66afa6'
+                facilityId:
+                  type: string
+                  format: uuid
+                  example: '3fa85f64-5717-4562-b3fc-2c963f66afa7'
+                zone:
+                  type: string
+                  enum: [north, south, east, west, central]
+                  example: 'south'
+                regulationId:
+                  type: string
+                  format: uuid
+                  example: '3fa85f64-5717-4562-b3fc-2c963f66afa8'
+                monitoringFrequency:
+                  type: string
+                  enum: [daily, weekly, monthly, quarterly, biannual, annual]
+                  example: 'monthly'
+                surveyType:
+                  type: string
+                  enum: [routine, follow_up, emergency, baseline]
+                  example: 'follow_up'
+                priority:
+                  type: string
+                  enum: [low, medium, high, critical]
+                  example: 'high'
+                surveyMethod:
+                  type: string
+                  enum: [visual, optical_gas_imaging, measurement, other]
+                  example: 'measurement'
+                technology:
+                  type: string
+                  enum: [flir_camera, tvs2000, sniffdog, prototype]
+                  example: 'tvs2000'
+                primaryTechnicianId:
+                  type: string
+                  format: uuid
+                  example: '3fa85f64-5717-4562-b3fc-2c963f66afb0'
+                date:
+                  type: string
+                  format: date-time
+                  example: '2023-02-15T16:30:00Z'
+                notes:
+                  type: string
+                  example: 'Updated survey notes with additional findings'
+      responses:
+        '200':
+          description: Survey updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: 'Survey updated successfully'
+                  data:
+                    $ref: '#/components/schemas/Survey'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+    delete:
+      tags:
+        - Surveys
+      summary: Delete survey
+      description: Soft delete a survey record
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Survey unique identifier
+      responses:
+        '200':
+          description: Survey deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: 'Survey deleted successfully'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '500':
+          $ref: '#/components/responses/ServerError'

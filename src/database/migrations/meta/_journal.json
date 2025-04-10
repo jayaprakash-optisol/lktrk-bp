@@ -5,15 +5,8 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1744209710120,
-      "tag": "0000_cuddly_sumo",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1744210351184,
-      "tag": "0001_optimal_crystal",
+      "when": 1744286779682,
+      "tag": "0000_bored_jimmy_woo",
       "breakpoints": true
     }
   ]

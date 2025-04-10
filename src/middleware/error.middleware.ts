@@ -76,7 +76,6 @@ export const errorHandler = (
   err: Error | ErrorWithStatusCode,
   req: RequestWithUser,
   res: Response,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   _next: NextFunction,
 ): void => {
   let error = err as ErrorWithStatusCode;

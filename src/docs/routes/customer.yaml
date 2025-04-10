@@ -1,0 +1,986 @@
+paths:
+  /customers:
+    get:
+      tags:
+        - Customers
+      summary: Get all customers
+      description: Retrieve a paginated list of all customers
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+          description: Page number
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            minimum: 1
+            default: 10
+          description: Number of items per page
+      responses:
+        '200':
+          description: List of customers successfully retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      items:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Customer'
+                      total:
+                        type: integer
+                        example: 37
+                      page:
+                        type: integer
+                        example: 1
+                      limit:
+                        type: integer
+                        example: 10
+                      totalPages:
+                        type: integer
+                        example: 4
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+    post:
+      tags:
+        - Customers
+      summary: Create new customer
+      description: Create a new customer record
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - customerName
+                - contactInfo
+              properties:
+                customerName:
+                  type: string
+                  example: 'Petrochemical Solutions Inc.'
+                customerCode:
+                  type: string
+                  example: 'PSI-2024'
+                industry:
+                  type: string
+                  enum:
+                    ['Oil & Gas', 'Chemical', 'Petrochemical', 'Manufacturing', 'Utility', 'Other']
+                  example: 'Petrochemical'
+                status:
+                  type: string
+                  enum: ['Active', 'Inactive', 'Pending', 'Suspended']
+                  example: 'Active'
+                companyInfo:
+                  type: object
+                  properties:
+                    taxId:
+                      type: string
+                      example: '12-3456789'
+                    yearEstablished:
+                      type: integer
+                      example: 1998
+                    employeeCount:
+                      type: integer
+                      example: 1250
+                    annualRevenue:
+                      type: string
+                      example: '$750M-1B'
+                    website:
+                      type: string
+                      format: url
+                      example: 'https://www.petrochem-solutions.example.com'
+                    headquarters:
+                      type: object
+                      properties:
+                        address:
+                          type: string
+                          example: '123 Corporate Blvd'
+                        city:
+                          type: string
+                          example: 'Houston'
+                        state:
+                          type: string
+                          example: 'TX'
+                        zipCode:
+                          type: string
+                          example: '77002'
+                        country:
+                          type: string
+                          example: 'USA'
+                contactInfo:
+                  type: object
+                  required:
+                    - primaryContact
+                  properties:
+                    primaryContact:
+                      type: object
+                      required:
+                        - name
+                        - email
+                      properties:
+                        name:
+                          type: string
+                          example: 'John Smith'
+                        title:
+                          type: string
+                          example: 'Environmental Compliance Director'
+                        email:
+                          type: string
+                          format: email
+                          example: 'j.smith@petrochem-solutions.example.com'
+                        phone:
+                          type: string
+                          example: '+1 (713) 555-1234'
+                        extension:
+                          type: string
+                          example: '5678'
+                    billingContact:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                          example: 'Sarah Johnson'
+                        title:
+                          type: string
+                          example: 'Accounts Payable Manager'
+                        email:
+                          type: string
+                          format: email
+                          example: 's.johnson@petrochem-solutions.example.com'
+                        phone:
+                          type: string
+                          example: '+1 (713) 555-4321'
+                        extension:
+                          type: string
+                          example: '9012'
+                    technicalContact:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                          example: 'Robert Chen'
+                        title:
+                          type: string
+                          example: 'Operations Manager'
+                        email:
+                          type: string
+                          format: email
+                          example: 'r.chen@petrochem-solutions.example.com'
+                        phone:
+                          type: string
+                          example: '+1 (713) 555-5678'
+                billingInfo:
+                  type: object
+                  properties:
+                    billingAddress:
+                      type: object
+                      properties:
+                        address:
+                          type: string
+                          example: 'P.O. Box 12345'
+                        city:
+                          type: string
+                          example: 'Houston'
+                        state:
+                          type: string
+                          example: 'TX'
+                        zipCode:
+                          type: string
+                          example: '77002'
+                        country:
+                          type: string
+                          example: 'USA'
+                    paymentTerms:
+                      type: string
+                      example: 'Net 30'
+                    preferredPaymentMethod:
+                      type: string
+                      enum: ['ACH', 'Check', 'CreditCard', 'WireTransfer']
+                      example: 'ACH'
+                    accountingSystem:
+                      type: string
+                      example: 'SAP'
+                    taxExempt:
+                      type: boolean
+                      example: false
+                contractInfo:
+                  type: object
+                  properties:
+                    contractId:
+                      type: string
+                      example: 'PSI-2024-0001'
+                    startDate:
+                      type: string
+                      format: date
+                      example: '2024-01-15'
+                    endDate:
+                      type: string
+                      format: date
+                      example: '2027-01-14'
+                    renewalType:
+                      type: string
+                      enum: ['Auto', 'Manual', 'None']
+                      example: 'Auto'
+                    serviceLevel:
+                      type: string
+                      enum: ['Basic', 'Standard', 'Premium', 'Custom']
+                      example: 'Premium'
+                    customTerms:
+                      type: array
+                      items:
+                        type: string
+                      example:
+                        [
+                          'Quarterly reporting',
+                          'Emergency response within 4 hours',
+                          'Dedicated account manager',
+                        ]
+                operationalInfo:
+                  type: object
+                  properties:
+                    regions:
+                      type: array
+                      items:
+                        type: string
+                      example: ['Gulf Coast', 'West Coast', 'Midwest']
+                    operatingHours:
+                      type: string
+                      example: '24/7'
+                    certifications:
+                      type: array
+                      items:
+                        type: string
+                      example: ['ISO 14001', 'ISO 9001', 'API Q1']
+                    complianceRequirements:
+                      type: array
+                      items:
+                        type: string
+                      example: ['EPA', 'TCEQ', 'CARB', 'OSHA']
+                notes:
+                  type: string
+                  example: 'Customer requires electronic invoicing and has specific safety protocols for all on-site work. All technicians must complete PSI safety orientation.'
+                tags:
+                  type: array
+                  items:
+                    type: string
+                  example: ['Key Account', 'Petrochemical', 'Multi-Facility', 'High Volume']
+      responses:
+        '201':
+          description: Customer created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: 'Customer created successfully'
+                  data:
+                    $ref: '#/components/schemas/Customer'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /customers/{id}:
+    get:
+      tags:
+        - Customers
+      summary: Get customer by ID
+      description: Retrieve a specific customer by its ID
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Customer unique identifier
+      responses:
+        '200':
+          description: Customer successfully retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    $ref: '#/components/schemas/Customer'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+    put:
+      tags:
+        - Customers
+      summary: Update customer
+      description: Update an existing customer record
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Customer unique identifier
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                customerName:
+                  type: string
+                  example: 'Petrochemical Solutions International Inc.'
+                customerCode:
+                  type: string
+                  example: 'PSII-2024'
+                industry:
+                  type: string
+                  enum:
+                    ['Oil & Gas', 'Chemical', 'Petrochemical', 'Manufacturing', 'Utility', 'Other']
+                  example: 'Petrochemical'
+                status:
+                  type: string
+                  enum: ['Active', 'Inactive', 'Pending', 'Suspended']
+                  example: 'Active'
+                companyInfo:
+                  type: object
+                  properties:
+                    taxId:
+                      type: string
+                      example: '12-3456789'
+                    yearEstablished:
+                      type: integer
+                      example: 1998
+                    employeeCount:
+                      type: integer
+                      example: 1750
+                    annualRevenue:
+                      type: string
+                      example: '$1B-1.5B'
+                    website:
+                      type: string
+                      format: url
+                      example: 'https://www.psii.example.com'
+                    headquarters:
+                      type: object
+                      properties:
+                        address:
+                          type: string
+                          example: '456 Global Plaza'
+                        city:
+                          type: string
+                          example: 'Houston'
+                        state:
+                          type: string
+                          example: 'TX'
+                        zipCode:
+                          type: string
+                          example: '77002'
+                        country:
+                          type: string
+                          example: 'USA'
+                contactInfo:
+                  type: object
+                  properties:
+                    primaryContact:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                          example: 'John Smith'
+                        title:
+                          type: string
+                          example: 'VP of Environmental Affairs'
+                        email:
+                          type: string
+                          format: email
+                          example: 'j.smith@psii.example.com'
+                        phone:
+                          type: string
+                          example: '+1 (713) 555-1234'
+                        extension:
+                          type: string
+                          example: '5678'
+                    billingContact:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                          example: 'Sarah Johnson'
+                        title:
+                          type: string
+                          example: 'Director of Finance'
+                        email:
+                          type: string
+                          format: email
+                          example: 's.johnson@psii.example.com'
+                        phone:
+                          type: string
+                          example: '+1 (713) 555-4321'
+                        extension:
+                          type: string
+                          example: '9012'
+                    technicalContact:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                          example: 'Robert Chen'
+                        title:
+                          type: string
+                          example: 'Chief Operations Officer'
+                        email:
+                          type: string
+                          format: email
+                          example: 'r.chen@psii.example.com'
+                        phone:
+                          type: string
+                          example: '+1 (713) 555-5678'
+                billingInfo:
+                  type: object
+                  properties:
+                    billingAddress:
+                      type: object
+                      properties:
+                        address:
+                          type: string
+                          example: 'P.O. Box 67890'
+                        city:
+                          type: string
+                          example: 'Houston'
+                        state:
+                          type: string
+                          example: 'TX'
+                        zipCode:
+                          type: string
+                          example: '77002'
+                        country:
+                          type: string
+                          example: 'USA'
+                    paymentTerms:
+                      type: string
+                      example: 'Net 45'
+                    preferredPaymentMethod:
+                      type: string
+                      enum: ['ACH', 'Check', 'CreditCard', 'WireTransfer']
+                      example: 'WireTransfer'
+                    accountingSystem:
+                      type: string
+                      example: 'Oracle'
+                    taxExempt:
+                      type: boolean
+                      example: true
+                contractInfo:
+                  type: object
+                  properties:
+                    contractId:
+                      type: string
+                      example: 'PSII-2024-0005'
+                    startDate:
+                      type: string
+                      format: date
+                      example: '2024-01-15'
+                    endDate:
+                      type: string
+                      format: date
+                      example: '2029-01-14'
+                    renewalType:
+                      type: string
+                      enum: ['Auto', 'Manual', 'None']
+                      example: 'Auto'
+                    serviceLevel:
+                      type: string
+                      enum: ['Basic', 'Standard', 'Premium', 'Custom']
+                      example: 'Custom'
+                    customTerms:
+                      type: array
+                      items:
+                        type: string
+                      example:
+                        [
+                          'Monthly executive reporting',
+                          'Emergency response within 2 hours',
+                          'Dedicated account team',
+                          'Quarterly business reviews',
+                        ]
+                operationalInfo:
+                  type: object
+                  properties:
+                    regions:
+                      type: array
+                      items:
+                        type: string
+                      example:
+                        [
+                          'Global',
+                          'Gulf Coast',
+                          'West Coast',
+                          'Midwest',
+                          'East Coast',
+                          'International',
+                        ]
+                    operatingHours:
+                      type: string
+                      example: '24/7/365'
+                    certifications:
+                      type: array
+                      items:
+                        type: string
+                      example: ['ISO 14001', 'ISO 9001', 'API Q1', 'ISO 45001', 'Responsible Care']
+                    complianceRequirements:
+                      type: array
+                      items:
+                        type: string
+                      example: ['EPA', 'TCEQ', 'CARB', 'OSHA', 'EU ETS', 'UK MCERTS']
+                notes:
+                  type: string
+                  example: 'Global expansion has increased scope of services. New international facilities require coordination with regional compliance teams. Customer has approved expanded budget for comprehensive monitoring program.'
+                tags:
+                  type: array
+                  items:
+                    type: string
+                  example:
+                    [
+                      'Strategic Account',
+                      'Global',
+                      'Petrochemical',
+                      'Multi-Facility',
+                      'High Volume',
+                      'VIP',
+                    ]
+      responses:
+        '200':
+          description: Customer updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: 'Customer updated successfully'
+                  data:
+                    $ref: '#/components/schemas/Customer'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+    delete:
+      tags:
+        - Customers
+      summary: Delete customer
+      description: Soft delete a customer record
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Customer unique identifier
+      responses:
+        '200':
+          description: Customer deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: 'Customer deleted successfully'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          $ref: '#/components/responses/ForbiddenError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /customers/search:
+    get:
+      tags:
+        - Customers
+      summary: Search customers
+      description: Search for customers by name, code, or industry
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: query
+          schema:
+            type: string
+          description: Search term to match against customer name, code, or industry
+          required: true
+        - in: query
+          name: page
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+          description: Page number
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            minimum: 1
+            default: 10
+          description: Number of items per page
+      responses:
+        '200':
+          description: Search results successfully retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      items:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Customer'
+                      total:
+                        type: integer
+                        example: 6
+                      page:
+                        type: integer
+                        example: 1
+                      limit:
+                        type: integer
+                        example: 10
+                      totalPages:
+                        type: integer
+                        example: 1
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /customers/status/{status}:
+    get:
+      tags:
+        - Customers
+      summary: Get customers by status
+      description: Retrieve all customers with a specific status
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: status
+          required: true
+          schema:
+            type: string
+            enum: ['Active', 'Inactive', 'Pending', 'Suspended']
+          description: Customer status to filter by
+        - in: query
+          name: page
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+          description: Page number
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            minimum: 1
+            default: 10
+          description: Number of items per page
+      responses:
+        '200':
+          description: Customers successfully retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      items:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Customer'
+                      total:
+                        type: integer
+                        example: 25
+                      page:
+                        type: integer
+                        example: 1
+                      limit:
+                        type: integer
+                        example: 10
+                      totalPages:
+                        type: integer
+                        example: 3
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /customers/industry/{industry}:
+    get:
+      tags:
+        - Customers
+      summary: Get customers by industry
+      description: Retrieve all customers in a specific industry
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: industry
+          required: true
+          schema:
+            type: string
+            enum: ['Oil & Gas', 'Chemical', 'Petrochemical', 'Manufacturing', 'Utility', 'Other']
+          description: Industry to filter by
+        - in: query
+          name: page
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+          description: Page number
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            minimum: 1
+            default: 10
+          description: Number of items per page
+      responses:
+        '200':
+          description: Customers successfully retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      items:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Customer'
+                      total:
+                        type: integer
+                        example: 14
+                      page:
+                        type: integer
+                        example: 1
+                      limit:
+                        type: integer
+                        example: 10
+                      totalPages:
+                        type: integer
+                        example: 2
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /customers/{id}/facilities:
+    get:
+      tags:
+        - Customers
+      summary: Get customer facilities
+      description: Retrieve all facilities associated with a specific customer
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Customer unique identifier
+        - in: query
+          name: page
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+          description: Page number
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            minimum: 1
+            default: 10
+          description: Number of items per page
+      responses:
+        '200':
+          description: Facilities successfully retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      items:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Facility'
+                      total:
+                        type: integer
+                        example: 8
+                      page:
+                        type: integer
+                        example: 1
+                      limit:
+                        type: integer
+                        example: 10
+                      totalPages:
+                        type: integer
+                        example: 1
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /customers/{id}/projects:
+    get:
+      tags:
+        - Customers
+      summary: Get customer projects
+      description: Retrieve all projects associated with a specific customer
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Customer unique identifier
+        - in: query
+          name: page
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+          description: Page number
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            minimum: 1
+            default: 10
+          description: Number of items per page
+      responses:
+        '200':
+          description: Projects successfully retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      items:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Project'
+                      total:
+                        type: integer
+                        example: 12
+                      page:
+                        type: integer
+                        example: 1
+                      limit:
+                        type: integer
+                        example: 10
+                      totalPages:
+                        type: integer
+                        example: 2
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '500':
+          $ref: '#/components/responses/ServerError'

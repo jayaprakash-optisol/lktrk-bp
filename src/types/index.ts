@@ -1,9 +1,12 @@
-import { users } from '../models';
+import { user } from '../models';
 import { Request } from 'express';
 
+// Re-export all interfaces
+export * from './interfaces';
+
 // Database model types
-export type User = typeof users.$inferSelect;
-export type NewUser = typeof users.$inferInsert;
+export type User = typeof user.$inferSelect;
+export type NewUser = typeof user.$inferInsert;
 
 // Auth request type with user property
 export interface AuthRequest extends Request {
@@ -17,7 +20,7 @@ export interface AuthRequest extends Request {
 
 // JWT payload type
 export interface JwtPayload {
-  userId: number;
+  userId: string;
   email: string;
   role: string;
   [key: string]: unknown;
