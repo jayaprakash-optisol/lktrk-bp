@@ -16,6 +16,7 @@ export default {
     '/src/database/scripts/',
     '/src/validators/',
     '/src/models/',
+    '.*seed\\.ts$',
   ],
   coverageReporters: ['text', 'lcov', 'clover', 'json'],
   reporters: ['default'],

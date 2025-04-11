@@ -1,7 +1,6 @@
 import { StatusCodes } from 'http-status-codes';
 import { JwtPayload, NewUser, ServiceResponse, User } from '../types';
-import { IAuthService } from '../types/interfaces';
-import { IUserService } from '../types/interfaces';
+import { IAuthService, IUserService } from '../types/interfaces';
 import { createServiceResponse } from '../utils/response.util';
 import { jwtUtil } from '../utils/jwt.util';
 import { UserService } from './user.service';
@@ -50,38 +49,6 @@ export class AuthService implements IAuthService {
 
       // If moduleAccess is provided, create a custom role for this user
       let roleId: string | undefined = userData.roleId;
-
-      if (userData.moduleAccess && userData.moduleAccess.length > 0) {
-        // Create a new role with the provided module access
-        const roleName = `${userData.firstName} ${userData.lastName} Role`;
-        const roleResult = await this.roleService.createRole({
-          name: roleName,
-          description: `Custom role for ${userData.email}`,
-          moduleAccess: userData.moduleAccess,
-        });
-
-        if (!roleResult.success || !roleResult.data) {
-          return createServiceResponse<Omit<User, 'password'>>(
-            false,
-            undefined,
-            'Failed to create role for user',
-            StatusCodes.INTERNAL_SERVER_ERROR,
-          );
-        }
-
-        // Use the newly created role ID
-        roleId = roleResult.data.id;
-      }
-
-      // Make sure we have a roleId, either from input or newly created
-      if (!roleId) {
-        return createServiceResponse<Omit<User, 'password'>>(
-          false,
-          undefined,
-          'Role ID is required',
-          StatusCodes.BAD_REQUEST,
-        );
-      }
 
       // Validate that the roleId exists in the database
       if (userData.roleId) {

@@ -67,11 +67,16 @@ class App {
   }
 
   private configureRoutes(): void {
-    // Apply rate limiter to API routes only
+    // Apply rate limiter to API routes
     this.app.use(`${env.API_PREFIX}`, rateLimiter());
 
-    // Use all API routes from the combined router
-    this.app.use(`${env.API_PREFIX}`, routes);
+    // Configure web API routes with versioning
+    this.app.use(env.API_PREFIX, routes);
+
+    // Health check endpoint (no rate limiting)
+    this.app.get('/health', (_req: Request, res: Response) => {
+      res.status(200).json({ status: 'OK' });
+    });
 
     // Swagger documentation (no rate limiting)
     this.app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));

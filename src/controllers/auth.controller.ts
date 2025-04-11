@@ -25,8 +25,7 @@ export class AuthController {
       }
 
       // Process module access data from the request
-      const processedModuleAccess = this.processModuleAccess(moduleAccess);
-      console.log('processedModuleAccess', processedModuleAccess);
+      this.processModuleAccess(moduleAccess);
 
       // Register the user with role information
       const result = await this.authService.register({
@@ -36,7 +35,6 @@ export class AuthController {
         lastName,
         phoneNumber,
         roleId: roleId,
-        moduleAccess: processedModuleAccess,
       });
 
       if (!result.success) {

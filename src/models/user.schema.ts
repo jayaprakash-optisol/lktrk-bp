@@ -49,27 +49,3 @@ export const hasModuleAccess = (
 
   return accessLevels[moduleAccess.accessLevel] >= accessLevels[requiredAccess];
 };
-
-// Create a new role with module access
-// const createRole = async (db: Database) => {
-//   const newRole = await db
-//     .insert(role)
-//     .values({
-//       name: 'Project Manager',
-//       description: 'Manages projects and teams',
-//       isSystem: false,
-//     })
-//     .returning();
-
-//   // Set module access for the role
-//   await db.insert(roleModuleAccess).values([
-//     { roleId: newRole.id, module: 'projects', accessLevel: 'full_access' },
-//     { roleId: newRole.id, module: 'surveys', accessLevel: 'edit_access' },
-//     { roleId: newRole.id, module: 'dashboard', accessLevel: 'view_access' },
-//   ]);
-// };
-
-// // Check if user has access to a module
-// const canUserEditSurveys = (user: UserWithRole) => {
-//   return hasModuleAccess(user, 'surveys', 'edit_access');
-// };

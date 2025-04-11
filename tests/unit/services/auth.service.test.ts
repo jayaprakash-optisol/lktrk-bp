@@ -4,7 +4,6 @@ import { RoleService } from '../../../src/services';
 import { mockUsers } from '../../mocks/mocks';
 import { jwtUtil } from '../../../src/utils/jwt.util';
 import { StatusCodes } from 'http-status-codes';
-import { ModuleAccess } from '../../../src/services/role.service';
 
 // Fix the UserService mock implementation
 jest.mock('../../../src/services/user.service', () => {
@@ -90,15 +89,6 @@ describe('AuthService', () => {
         lastName: 'Doe',
         phoneNumber: '555-123-4567',
         roleId: 'a301bc88-331a-411c-84ce-2c311e628942',
-        moduleAccess: [
-          { module: 'dashboard', accessLevel: 'no_access' },
-          { module: 'projects', accessLevel: 'view_access' },
-          { module: 'surveys', accessLevel: 'view_access' },
-          { module: 'calendar', accessLevel: 'no_access' },
-          { module: 'customers', accessLevel: 'edit_access' },
-          { module: 'components', accessLevel: 'no_access' },
-          { module: 'equipments', accessLevel: 'no_access' },
-        ] as unknown as ModuleAccess[],
       };
 
       mockUserService.getUserByEmail.mockResolvedValue({
@@ -113,17 +103,6 @@ describe('AuthService', () => {
         data: { id: 'a301bc88-331a-411c-84ce-2c311e628942', name: 'User' },
       });
 
-      // Mock create role for moduleAccess
-      mockRoleService.createRole.mockResolvedValue({
-        success: true,
-        data: {
-          id: 'new-custom-role-id',
-          name: 'John Doe Role',
-          description: 'Custom role for useds1ddr@example.com',
-          moduleAccess: userData.moduleAccess,
-        },
-      });
-
       mockUserService.createUser.mockResolvedValue({
         success: true,
         data: {
@@ -133,7 +112,7 @@ describe('AuthService', () => {
           firstName: userData.firstName,
           lastName: userData.lastName,
           phoneNumber: userData.phoneNumber,
-          roleId: 'new-custom-role-id', // Custom role created with moduleAccess
+          roleId: userData.roleId,
           isActive: true,
           createdAt: new Date(),
           updatedAt: new Date(),
@@ -146,21 +125,8 @@ describe('AuthService', () => {
 
       // Assert
       expect(mockUserService.getUserByEmail).toHaveBeenCalledWith(userData.email);
-      expect(mockRoleService.createRole).toHaveBeenCalledWith({
-        name: 'John Doe Role',
-        description: 'Custom role for useds1ddr@example.com',
-        moduleAccess: userData.moduleAccess,
-      });
-      expect(mockUserService.createUser).toHaveBeenCalledWith(
-        expect.objectContaining({
-          email: userData.email,
-          password: userData.password,
-          firstName: userData.firstName,
-          lastName: userData.lastName,
-          phoneNumber: userData.phoneNumber,
-          roleId: 'new-custom-role-id',
-        }),
-      );
+      expect(mockRoleService.getRoleById).toHaveBeenCalledWith(userData.roleId);
+      expect(mockUserService.createUser).toHaveBeenCalledWith(userData);
       expect(result.success).toBe(true);
       expect(result.data).toEqual(
         expect.objectContaining({
@@ -169,6 +135,7 @@ describe('AuthService', () => {
           firstName: userData.firstName,
           lastName: userData.lastName,
           phoneNumber: userData.phoneNumber,
+          roleId: userData.roleId,
         }),
       );
       expect(result.data).not.toHaveProperty('password');

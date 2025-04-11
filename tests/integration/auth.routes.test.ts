@@ -4,7 +4,7 @@ import { Request, Response, NextFunction } from 'express';
 import 'express';
 import { agent, mockToken, mockUsers } from '../mocks';
 import { setupBasicTests } from '../mocks/test-hooks';
-import { ModuleAccess } from '../../src/services/role.service';
+// import { ModuleAccess } from '../../src/services/role.service';
 
 // Mock environment config to disable encryption
 jest.mock('../../src/config/env.config', () => ({
@@ -102,15 +102,15 @@ describe('Auth Routes', () => {
   describe('POST /api/auth/register', () => {
     it('should register a new user', async () => {
       // Arrange
-      const moduleAccessInput = {
-        dashboard: 'no_access',
-        projects: 'view_access',
-        surveys: 'view_access',
-        calendar: 'no_access',
-        customers: 'edit_access',
-        components: 'no_access',
-        equipments: 'no_access',
-      };
+      // const moduleAccessInput = {
+      //   dashboard: 'no_access',
+      //   projects: 'view_access',
+      //   surveys: 'view_access',
+      //   calendar: 'no_access',
+      //   customers: 'edit_access',
+      //   components: 'no_access',
+      //   equipments: 'no_access',
+      // };
 
       // This is the data we'll send in the request
       const newUser = {
@@ -120,16 +120,16 @@ describe('Auth Routes', () => {
         lastName: 'User',
         roleId: '9f983688-16f7-4969-9eb9-72eb7acbefa3',
         phoneNumber: '1234567890',
-        moduleAccess: moduleAccessInput,
+        // moduleAccess: moduleAccessInput,
       };
 
       // This is the expected processed moduleAccess that the controller will create
-      const expectedModuleAccess = Object.entries(moduleAccessInput).map(
-        ([module, accessLevel]) => ({
-          module,
-          accessLevel,
-        }),
-      ) as ModuleAccess[];
+      // const expectedModuleAccess = Object.entries(moduleAccessInput).map(
+      //   ([module, accessLevel]) => ({
+      //     module,
+      //     accessLevel,
+      //   }),
+      // ) as ModuleAccess[];
 
       authService.register.mockResolvedValue({
         success: true,
@@ -164,7 +164,7 @@ describe('Auth Routes', () => {
           firstName: newUser.firstName,
           lastName: newUser.lastName,
           phoneNumber: '1234567890',
-          moduleAccess: expectedModuleAccess,
+          // moduleAccess: expectedModuleAccess,
         }),
       );
     });

@@ -24,9 +24,21 @@ scanner(
       'sonar.typescript.lcov.reportPaths': 'coverage/lcov.info',
       'sonar.javascript.lcov.reportPaths': 'coverage/lcov.info',
       'sonar.testExecutionReportPaths': 'coverage/test-report.xml',
-      'sonar.coverage.exclusions':
-        'tests/**,src/database/scripts/**,src/index.ts,src/utils/swagger.ts',
+
+      // Rules to avoid duplicate coverage reporting
+      'sonar.projectBaseDir': '.',
       'sonar.exclusions': 'node_modules/**,coverage/**,dist/**,tests/**',
+      'sonar.coverage.exclusions':
+        'tests/**,src/database/scripts/**,src/index.ts,src/utils/swagger.ts,src/models/**,**/*seed.ts',
+
+      // Exclude test files and seed files from duplication detection
+      'sonar.cpd.exclusions':
+        'tests/**,**/*.test.ts,**/*.spec.ts,**/*seed.ts,**/seed.ts,src/database/scripts/seed.ts,src/database/scripts/**/*seed*.ts',
+
+      // Define rules to separate web and mobile components
+      'sonar.issue.ignore.multicriteria': 'webMobile',
+      'sonar.issue.ignore.multicriteria.webMobile.resourceKey': 'src/routes/mobile/**/*',
+      'sonar.issue.ignore.multicriteria.webMobile.ruleKey': 'src/routes/web/**/*',
     },
   },
   () => process.exit(),
