@@ -1,6 +1,6 @@
 import { formatZodError, createValidator } from '../../../src/utils/validator.util';
 import { z } from 'zod';
-import { Request, Response, NextFunction } from 'express';
+import { Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import { logger } from '../../../src/utils/logger';
 

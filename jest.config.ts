@@ -15,6 +15,7 @@ export default {
     '/src/index.ts',
     '/src/database/scripts/',
     '/src/validators/',
+    '/src/models/',
   ],
   coverageReporters: ['text', 'lcov', 'clover', 'json'],
   reporters: ['default'],

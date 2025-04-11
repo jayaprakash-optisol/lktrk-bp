@@ -4,7 +4,6 @@ import { Request, Response, NextFunction } from 'express';
 import 'express';
 import { agent, mockToken, mockUsers } from '../mocks';
 import { setupBasicTests } from '../mocks/test-hooks';
-import { moduleEnum, accessLevelEnum } from '../../src/models/enums';
 import { ModuleAccess } from '../../src/services/role.service';
 
 // Mock environment config to disable encryption

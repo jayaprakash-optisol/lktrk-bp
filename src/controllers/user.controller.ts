@@ -68,7 +68,7 @@ export class UserController {
         return sendError(res, 'Invalid user ID');
       }
 
-      const { firstName, lastName, password, roleId, isActive } = req.body;
+      const { firstName, lastName, password, roleId } = req.body;
 
       const result = await this.userService.updateUser(userId, {
         firstName,
