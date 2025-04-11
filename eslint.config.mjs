@@ -66,4 +66,10 @@ export default [
       '@typescript-eslint/no-empty-function': 'off',
     },
   },
+  {
+    files: ['**/utils/pagination.util.ts'],
+    rules: {
+      '@typescript-eslint/no-explicit-any': 'off',
+    },
+  },
 ];

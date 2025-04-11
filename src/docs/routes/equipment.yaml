@@ -1,0 +1,315 @@
+tags:
+  - name: Equipment
+    description: Equipment management endpoints
+
+paths:
+  /equipment:
+    get:
+      tags:
+        - Equipment
+      summary: Get all equipment
+      description: Returns a paginated list of equipment with optional filtering
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
+          description: Page number for pagination
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 10
+          description: Number of items per page
+        - in: query
+          name: search
+          schema:
+            type: string
+          description: Search term to filter equipment by name
+        - in: query
+          name: type
+          schema:
+            type: string
+            enum: [storage_tank, pipeline_piping, vessel, blower_fan]
+          description: Filter equipment by type
+        - in: query
+          name: sortBy
+          schema:
+            type: string
+          description: Field to sort by (e.g., equipmentName, createdAt)
+        - in: query
+          name: sortOrder
+          schema:
+            type: string
+            enum: [asc, desc]
+            default: asc
+          description: Sort direction (ascending or descending)
+      responses:
+        '200':
+          description: List of equipment retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      equipment:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Equipment'
+                      total:
+                        type: integer
+                        example: 15
+                      page:
+                        type: integer
+                        example: 1
+                      limit:
+                        type: integer
+                        example: 10
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+    post:
+      tags:
+        - Equipment
+      summary: Create new equipment
+      description: Creates a new equipment entry
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - equipmentName
+                - equipmentType
+              properties:
+                equipmentName:
+                  type: string
+                  example: 'Storage Tank A-101'
+                equipmentType:
+                  type: string
+                  enum: [storage_tank, pipeline_piping, vessel, blower_fan]
+                  description: |
+                    Equipment type, must be one of:
+                    - storage_tank: Storage tanks for liquids or gases
+                    - pipeline_piping: Pipelines and piping systems
+                    - vessel: Process vessels and containers
+                    - blower_fan: Blowers, fans, and air movement equipment
+                  example: 'storage_tank'
+                locationLatitude:
+                  type: number
+                  format: double
+                  example: 29.7604
+                locationLongitude:
+                  type: number
+                  format: double
+                  example: -95.3698
+                notes:
+                  type: string
+                  example: 'Located at northwest corner of facility'
+      responses:
+        '201':
+          description: Equipment created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    $ref: '#/components/schemas/Equipment'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /equipment/{id}:
+    get:
+      tags:
+        - Equipment
+      summary: Get equipment by ID
+      description: Returns equipment details by ID
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Equipment ID
+      responses:
+        '200':
+          description: Equipment details retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    $ref: '#/components/schemas/Equipment'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+    put:
+      tags:
+        - Equipment
+      summary: Update equipment
+      description: Updates equipment details by ID
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Equipment ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                equipmentName:
+                  type: string
+                  example: 'Storage Tank A-102'
+                equipmentType:
+                  type: string
+                  enum: [storage_tank, pipeline_piping, vessel, blower_fan]
+                  description: |
+                    Equipment type, must be one of:
+                    - storage_tank: Storage tanks for liquids or gases
+                    - pipeline_piping: Pipelines and piping systems
+                    - vessel: Process vessels and containers
+                    - blower_fan: Blowers, fans, and air movement equipment
+                  example: 'storage_tank'
+                locationLatitude:
+                  type: number
+                  format: double
+                  example: 29.7605
+                locationLongitude:
+                  type: number
+                  format: double
+                  example: -95.3699
+                notes:
+                  type: string
+                  example: 'Located at northeast corner of facility'
+      responses:
+        '200':
+          description: Equipment updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    $ref: '#/components/schemas/Equipment'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+    delete:
+      tags:
+        - Equipment
+      summary: Delete equipment
+      description: Deletes equipment by ID
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Equipment ID
+      responses:
+        '200':
+          description: Equipment deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: 'Equipment deleted successfully'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+components:
+  schemas:
+    Equipment:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: '550e8400-e29b-41d4-a716-446655440000'
+        equipmentName:
+          type: string
+          example: 'Storage Tank A-101'
+        equipmentType:
+          type: string
+          enum: [storage_tank, pipeline_piping, vessel, blower_fan]
+          description: |
+            Equipment type, one of:
+            - storage_tank: Storage tanks for liquids or gases
+            - pipeline_piping: Pipelines and piping systems
+            - vessel: Process vessels and containers
+            - blower_fan: Blowers, fans, and air movement equipment
+          example: 'storage_tank'
+        locationLatitude:
+          type: number
+          format: double
+          example: 29.7604
+        locationLongitude:
+          type: number
+          format: double
+          example: -95.3698
+        notes:
+          type: string
+          example: 'Located at northwest corner of facility'

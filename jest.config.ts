@@ -17,6 +17,7 @@ export default {
     '/src/validators/',
     '/src/models/',
     '.*seed\\.ts$',
+    '/src/utils/pagination.util.ts',
   ],
   coverageReporters: ['text', 'lcov', 'clover', 'json'],
   reporters: ['default'],
